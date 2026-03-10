@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-beige-light">
+      <div className="min-h-full bg-beige-light pb-8">
         {/* Header */}
         <header className="mobile-header px-4 py-3">
           <h1 className="font-playfair text-xl font-bold text-espresso">Settings</h1>

@@ -150,7 +150,7 @@ export default function ChatPage() {
   if (!getConversation()) {
     return (
       <AppShell>
-        <div className="h-screen flex items-center justify-center bg-beige-light">
+        <div className="fixed inset-x-0 top-0 flex flex-col items-center justify-center bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
           <div className="text-center">
             <p className="text-taupe">Conversation not found</p>
             <button onClick={handleBack} className="mt-4 text-red-oxide font-medium">
@@ -164,7 +164,7 @@ export default function ChatPage() {
 
   return (
     <AppShell>
-      <div className="h-screen flex flex-col bg-beige-light">
+      <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
         {/* Chat Header */}
         <header className="bg-white px-4 py-3 flex items-center gap-3 shadow-sm sticky top-0 z-10">
           <button 

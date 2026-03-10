@@ -99,7 +99,7 @@ export default function CallsPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-beige-light">
+      <div className="min-h-full bg-beige-light">
         {/* Header */}
         <header className="mobile-header px-4 py-3">
           <h1 className="font-playfair text-2xl font-bold text-espresso mb-3">Calls</h1>
@@ -130,7 +130,7 @@ export default function CallsPage() {
         </header>
 
         {/* Call List */}
-        <div className="px-4 py-4 pb-32">
+        <div className="px-4 py-4 pb-8">
           {Object.entries(groupedCalls).map(([date, calls]) => (
             <div key={date} className="mb-6">
               <h3 className="text-xs font-semibold text-taupe uppercase tracking-wide mb-3 sticky top-0 bg-beige-light py-2">

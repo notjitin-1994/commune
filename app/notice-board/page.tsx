@@ -160,7 +160,7 @@ export default function NoticeBoardPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-beige-light">
+      <div className="min-h-full bg-beige-light">
         {/* Mobile Header */}
         <header className="mobile-header px-4 py-3">
           <div className="flex items-center justify-between">
@@ -180,7 +180,7 @@ export default function NoticeBoardPage() {
         </header>
 
         {/* Posts Feed */}
-        <div className="px-4 py-4 pb-28">
+        <div className="px-4 py-4 pb-8">
           <motion.div 
             className="space-y-4"
             initial="initial"

@@ -41,7 +41,7 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-beige-light">
+    <div className="bg-beige-light" style={{ minHeight: '100dvh' }}>
       {/* Desktop Side Navigation */}
       {!hideNav && (
         <div className="hidden lg:block">
@@ -49,19 +49,26 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className={`${hideNav ? '' : 'lg:ml-64'} pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0`} style={{ minHeight: '100dvh' }}>
+      {/* Main Content - Industry standard: consistent padding for navbar */}
+      <main 
+        className={`${hideNav ? '' : 'lg:ml-64'}`} 
+        style={{ 
+          minHeight: '100dvh',
+          paddingBottom: hideNav ? 0 : 'calc(64px + env(safe-area-inset-bottom))'
+        }}
+      >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="min-h-screen"
+          className="relative"
+          style={{ minHeight: hideNav ? '100dvh' : 'auto' }}
         >
           {children}
         </motion.div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - Always visible except modals */}
       {!hideNav && (
         <div className="lg:hidden">
           <BottomNav />

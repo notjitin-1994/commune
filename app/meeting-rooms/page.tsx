@@ -137,16 +137,16 @@ export default function MeetingRoomsPage() {
     }
   };
 
-  // Active Room View
+  // Active Room View - Industry standard: navbar always visible
   if (isInRoom && currentRoom) {
     return (
-      <AppShell hideNav>
-        <div className="h-screen bg-espresso flex flex-col overflow-hidden">
+      <AppShell>
+        <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-espresso" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
           {/* Header */}
-          <header className="px-4 py-3 flex items-center justify-between bg-deep-brown/50 backdrop-blur flex-shrink-0 touch-none">
+          <header className="px-4 py-3 flex items-center justify-between bg-deep-brown/50 backdrop-blur flex-shrink-0">
             <button 
               onClick={handleLeaveRoom}
-              className="lg:hidden p-2 -ml-2 rounded-xl active:bg-white/10"
+              className="p-2 -ml-2 rounded-xl active:bg-white/10"
             >
               <ArrowLeft className="w-5 h-5 text-beige-light" />
             </button>
@@ -160,7 +160,7 @@ export default function MeetingRoomsPage() {
             </div>
           </header>
 
-          {/* Participants Grid - Scrollable only when needed */}
+          {/* Participants Grid */}
           <div className="flex-1 overflow-y-auto p-4 min-h-0">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 content-start">
               {/* Local User */}
@@ -205,32 +205,32 @@ export default function MeetingRoomsPage() {
             </div>
           </div>
 
-          {/* Controls - Fixed at bottom */}
-          <div className="flex-shrink-0 px-4 py-4 bg-deep-brown/80 backdrop-blur-md border-t border-white/10 touch-none">
-            <div className="flex items-center justify-center gap-4 pb-safe">
+          {/* Controls - Above navbar */}
+          <div className="flex-shrink-0 px-4 py-3 bg-deep-brown/80 backdrop-blur-md border-t border-white/10">
+            <div className="flex items-center justify-center gap-4">
               <button
                 onClick={toggleMute}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 ${
+                className={`w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center transition-all active:scale-95 ${
                   isMuted ? 'bg-red-oxide text-white' : 'bg-beige-light text-deep-brown'
                 }`}
               >
-                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                {isMuted ? <MicOff className="w-5 h-5 lg:w-6 lg:h-6" /> : <Mic className="w-5 h-5 lg:w-6 lg:h-6" />}
               </button>
 
               <button
                 onClick={handleToggleHand}
-                className={`w-14 h-14 rounded-full bg-beige-light text-deep-brown flex items-center justify-center transition-all active:scale-95 ${
+                className={`w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-beige-light text-deep-brown flex items-center justify-center transition-all active:scale-95 ${
                   isHandRaised ? 'ring-4 ring-tan' : ''
                 }`}
               >
-                <Hand className="w-6 h-6" />
+                <Hand className="w-5 h-5 lg:w-6 lg:h-6" />
               </button>
 
               <button
                 onClick={handleLeaveRoom}
-                className="w-14 h-14 rounded-full bg-red-oxide text-white flex items-center justify-center active:scale-95 transition-transform"
+                className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-red-oxide text-white flex items-center justify-center active:scale-95 transition-transform"
               >
-                <PhoneOff className="w-6 h-6" />
+                <PhoneOff className="w-5 h-5 lg:w-6 lg:h-6" />
               </button>
             </div>
           </div>

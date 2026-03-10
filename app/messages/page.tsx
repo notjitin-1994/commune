@@ -178,7 +178,7 @@ export default function MessagesPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-beige-light">
+      <div className="min-h-full bg-beige-light">
         {/* Header */}
         <header className="mobile-header px-4 py-3 sticky top-0 z-10">
           <h1 className="font-playfair text-2xl font-bold text-espresso mb-3">Messages</h1>
@@ -195,7 +195,7 @@ export default function MessagesPage() {
         </header>
 
         {/* Conversations List */}
-        <div className="px-4 py-4 pb-28">
+        <div className="px-4 py-4 pb-8">
           <AnimatePresence>
             {Object.entries(groupedConversations).map(([dateLabel, convs]) => (
               <motion.div 
