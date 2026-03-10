@@ -140,10 +140,10 @@ export default function MeetingRoomsPage() {
   // Active Room View
   if (isInRoom && currentRoom) {
     return (
-      <AppShell>
-        <div className="h-[calc(100vh-64px)] lg:h-screen bg-espresso flex flex-col">
+      <AppShell hideNav>
+        <div className="h-screen bg-espresso flex flex-col overflow-hidden">
           {/* Header */}
-          <header className="px-4 py-3 flex items-center justify-between bg-deep-brown/50 backdrop-blur flex-shrink-0">
+          <header className="px-4 py-3 flex items-center justify-between bg-deep-brown/50 backdrop-blur flex-shrink-0 touch-none">
             <button 
               onClick={handleLeaveRoom}
               className="lg:hidden p-2 -ml-2 rounded-xl active:bg-white/10"
@@ -160,9 +160,9 @@ export default function MeetingRoomsPage() {
             </div>
           </header>
 
-          {/* Participants Grid - Scrollable area */}
+          {/* Participants Grid - Scrollable only when needed */}
           <div className="flex-1 overflow-y-auto p-4 min-h-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 content-start">
               {/* Local User */}
               <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -205,9 +205,9 @@ export default function MeetingRoomsPage() {
             </div>
           </div>
 
-          {/* Controls - Fixed at bottom, within the call screen */}
-          <div className="flex-shrink-0 px-4 py-4 bg-deep-brown/80 backdrop-blur-md border-t border-white/10">
-            <div className="flex items-center justify-center gap-4">
+          {/* Controls - Fixed at bottom */}
+          <div className="flex-shrink-0 px-4 py-4 bg-deep-brown/80 backdrop-blur-md border-t border-white/10 touch-none">
+            <div className="flex items-center justify-center gap-4 pb-safe">
               <button
                 onClick={toggleMute}
                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 ${

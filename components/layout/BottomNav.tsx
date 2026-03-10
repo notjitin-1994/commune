@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Map, ClipboardList, MessageSquare, Users, Phone, Settings } from "lucide-react";
 import { cn } from "@/lib/utils/helpers";
 
@@ -35,17 +34,10 @@ export function BottomNav() {
               )}
             >
               <div className={cn(
-                "relative p-2.5 rounded-2xl transition-colors overflow-hidden",
+                "p-2 rounded-xl transition-colors",
                 isActive ? "bg-red-oxide/10" : ""
               )}>
-                <Icon className="w-5 h-5 relative z-10" strokeWidth={isActive ? 2.5 : 2} />
-                {isActive && (
-                  <motion.div
-                    layoutId="bottomNavIndicator"
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-oxide rounded-full"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
+                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
               </div>
               <span className={cn(
                 "text-[10px] font-medium mt-1",

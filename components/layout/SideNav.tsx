@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Map, ClipboardList, MessageSquare, Users, Phone, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils/helpers";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -44,22 +43,13 @@ export function SideNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative overflow-hidden",
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
                     isActive
                       ? "text-red-oxide bg-red-oxide/5"
                       : "text-taupe hover:text-deep-brown hover:bg-beige-medium/50"
                   )}
                 >
-                  <div className="relative flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
-                    <Icon className="w-5 h-5 relative z-10" />
-                    {isActive && (
-                      <motion.div
-                        layoutId="sideNavIndicator"
-                        className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-oxide rounded-full"
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                  </div>
+                  <Icon className="w-5 h-5" />
                   <span className="font-medium text-sm">{item.label}</span>
                 </Link>
               </li>
