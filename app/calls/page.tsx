@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Phone, 
@@ -8,12 +8,10 @@ import {
   PhoneOutgoing, 
   PhoneMissed, 
   Video, 
-  Clock, 
   Plus, 
   X, 
   Delete,
-  ChevronLeft,
-  User
+  Clock3
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -26,8 +24,8 @@ interface CallLogWithUsers extends CallLog {
   otherParty?: UserType;
 }
 
-// Modern compact dialer component
-function CompactDialer({
+// World-class Material Design 3 Dialer
+function ModernDialer({
   isOpen,
   onClose,
   onCall,
@@ -37,126 +35,277 @@ function CompactDialer({
   onCall: (number: string, type: 'audio' | 'video') => void;
 }) {
   const [number, setNumber] = useState("");
+  
+  const [recentNumbers, setRecentNumbers] = useState<string[]>([]);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  
+
+  // Load recent numbers from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentDialedNumbers');
+    if (stored) {
+      setRecentNumbers(JSON.parse(stored));
+    }
+  }, []);
+
+  // Save number to recent when dialed
+  const saveToRecent = (num: string) => {
+    setRecentNumbers(prev => {
+      const filtered = prev.filter(n => n !== num);
+      const updated = [num, ...filtered].slice(0, 5);
+      localStorage.setItem('recentDialedNumbers', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Format phone number as user types
+  const formatPhoneNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length === 0) return '';
+    
+    // Format as (XXX) XXX-XXXX for US numbers
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+  };
 
   const dialPad = [
-    { num: '1', sub: '' },
-    { num: '2', sub: 'ABC' },
-    { num: '3', sub: 'DEF' },
-    { num: '4', sub: 'GHI' },
-    { num: '5', sub: 'JKL' },
-    { num: '6', sub: 'MNO' },
-    { num: '7', sub: 'PQRS' },
-    { num: '8', sub: 'TUV' },
-    { num: '9', sub: 'WXYZ' },
-    { num: '*', sub: '' },
-    { num: '0', sub: '+' },
-    { num: '#', sub: '' },
+    { num: '1', sub: '', letters: '' },
+    { num: '2', sub: 'ABC', letters: 'ABC' },
+    { num: '3', sub: 'DEF', letters: 'DEF' },
+    { num: '4', sub: 'GHI', letters: 'GHI' },
+    { num: '5', sub: 'JKL', letters: 'JKL' },
+    { num: '6', sub: 'MNO', letters: 'MNO' },
+    { num: '7', sub: 'PQRS', letters: 'PQRS' },
+    { num: '8', sub: 'TUV', letters: 'TUV' },
+    { num: '9', sub: 'WXYZ', letters: 'WXYZ' },
+    { num: '*', sub: '', letters: '' },
+    { num: '0', sub: '+', letters: '+' },
+    { num: '#', sub: '', letters: '' },
   ];
 
   const handlePress = (key: string) => {
-    if (number.length < 15) setNumber(prev => prev + key);
+    if (number.replace(/\D/g, '').length < 15) {
+      const newNumber = number + key;
+      setNumber(newNumber);
+      // Haptic feedback if available
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
   };
 
   const handleBackspace = () => {
     setNumber(prev => prev.slice(0, -1));
+    if (navigator.vibrate) navigator.vibrate(5);
+  };
+
+  const handleLongPressStart = () => {
+    longPressTimer.current = setInterval(() => {
+      setNumber(prev => prev.slice(0, -1));
+      if (navigator.vibrate) navigator.vibrate(5);
+    }, 100);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) {
+      clearInterval(longPressTimer.current);
+      longPressTimer.current = null;
+    }
   };
 
   const handleCall = (type: 'audio' | 'video') => {
-    if (number) {
+    if (number.replace(/\D/g, '').length >= 7) {
+      saveToRecent(number);
       onCall(number, type);
       setNumber("");
       onClose();
     }
   };
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const cleaned = text.replace(/\D/g, '');
+      if (cleaned.length > 0 && cleaned.length <= 15) {
+        setNumber(cleaned);
+      }
+    } catch (err) {
+      console.log('Paste failed');
+    }
+  };
+
+  // Handle keyboard input when dialer is open
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') handlePress(e.key);
+      if (e.key === '*') handlePress('*');
+      if (e.key === '#') handlePress('#');
+      if (e.key === 'Backspace') handleBackspace();
+      if (e.key === 'Enter' && number) handleCall('audio');
+      if (e.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, number]);
+
+  const displayNumber = formatPhoneNumber(number);
+  const isValidNumber = number.replace(/\D/g, '').length >= 7;
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop - glassmorphism */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-espresso/60 backdrop-blur-md z-[100]"
+            className="fixed inset-0 bg-espresso/70 backdrop-blur-sm z-[100]"
           />
 
-          {/* Compact Dialer Modal */}
+          {/* Modern Bottom Sheet Dialer */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[320px] bg-white rounded-3xl shadow-2xl overflow-hidden"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-[32px] shadow-2xl overflow-hidden"
+            style={{ 
+              maxHeight: "85vh",
+              paddingBottom: "env(safe-area-inset-bottom)"
+            }}
           >
-            {/* Header with close */}
-            <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <span className="text-sm font-medium text-taupe">New Call</span>
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1.5 bg-beige-medium rounded-full" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-3">
+              <span className="text-base font-semibold text-espresso">New Call</span>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-beige-light flex items-center justify-center active:bg-beige-medium transition-colors"
+                className="w-10 h-10 rounded-full bg-beige-light flex items-center justify-center active:bg-beige-medium transition-colors"
               >
-                <X className="w-4 h-4 text-taupe" />
+                <X className="w-5 h-5 text-taupe" />
               </button>
             </div>
 
-            {/* Number Display */}
-            <div className="px-4 py-3 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-3xl font-mono font-semibold text-espresso tracking-wider">
-                  {number || "Enter number"}
-                </span>
+            {/* Number Display Area */}
+            <div className="px-6 py-4 bg-beige-light/30">
+              <div className="flex items-center justify-between gap-4">
+                {/* Number Input / Display */}
+                <div className="flex-1 min-w-0">
+                  <input
+                    type="tel"
+                    value={displayNumber || "Enter a number"}
+                    readOnly
+                    className={`w-full bg-transparent text-3xl font-semibold tracking-wider outline-none ${
+                      number ? "text-espresso" : "text-taupe/50"
+                    }`}
+                    onClick={handlePaste}
+                  />
+                  {number && (
+                    <p className="text-xs text-taupe mt-1">
+                      {number.replace(/\D/g, '').length} digits
+                    </p>
+                  )}
+                </div>
+
+                {/* Backspace Button */}
+                {number && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    onClick={handleBackspace}
+                    onMouseDown={handleLongPressStart}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={handleLongPressStart}
+                    onTouchEnd={handleLongPressEnd}
+                    className="w-12 h-12 rounded-full bg-beige-medium/50 flex items-center justify-center active:bg-beige-medium transition-colors"
+                  >
+                    <Delete className="w-5 h-5 text-taupe" />
+                  </motion.button>
+                )}
               </div>
-              {number && (
-                <button
-                  onClick={handleBackspace}
-                  className="mt-2 px-3 py-1 text-xs text-taupe hover:text-red-oxide transition-colors"
-                >
-                  Clear
-                </button>
+
+              {/* Recent Numbers Chips */}
+              {recentNumbers.length > 0 && !number && (
+                <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                  {recentNumbers.map((num, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setNumber(num)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-sm text-deep-brown shadow-sm border border-beige-medium/50 active:scale-95 transition-transform whitespace-nowrap"
+                    >
+                      <Clock3 className="w-3.5 h-3.5 text-taupe" />
+                      {formatPhoneNumber(num)}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Compact Number Pad */}
-            <div className="px-4 pb-3">
-              <div className="grid grid-cols-3 gap-2">
-                {dialPad.map((key) => (
+            {/* Dial Pad - Large Touch Targets */}
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-3 gap-x-6 gap-y-3 max-w-sm mx-auto">
+                {dialPad.map((key, index) => (
                   <motion.button
                     key={key.num}
-                    whileTap={{ scale: 0.92 }}
+                    whileTap={{ scale: 0.92, backgroundColor: "#E8E0D5" }}
                     onClick={() => handlePress(key.num)}
-                    className="h-14 rounded-2xl bg-beige-light/50 active:bg-beige-medium flex flex-col items-center justify-center transition-colors"
+                    className="h-[72px] rounded-2xl bg-beige-light/60 flex flex-col items-center justify-center gap-0.5 active:bg-beige-medium transition-colors"
                   >
-                    <span className="text-xl font-semibold text-espresso">{key.num}</span>
+                    <span className="text-[28px] font-semibold text-espresso leading-none">
+                      {key.num}
+                    </span>
                     {key.sub && (
-                      <span className="text-[9px] text-taupe font-medium tracking-wider">{key.sub}</span>
+                      <span className="text-[11px] font-medium text-taupe tracking-wider leading-none">
+                        {key.sub}
+                      </span>
                     )}
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Call Actions */}
-            <div className="px-4 pb-4 pt-2 flex gap-3">
+            {/* Call Actions - Prominent Buttons */}
+            <div className="px-6 pb-6 pt-2 flex gap-4 max-w-sm mx-auto">
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => handleCall('audio')}
-                disabled={!number}
-                className="flex-1 h-12 rounded-2xl bg-sage text-white font-medium flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-sage/25"
+                disabled={!isValidNumber}
+                className="flex-1 h-14 rounded-2xl bg-sage text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-sage/20"
               >
                 <Phone className="w-5 h-5" />
-                <span className="text-sm">Audio</span>
+                <span>Audio</span>
               </motion.button>
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => handleCall('video')}
-                disabled={!number}
-                className="flex-1 h-12 rounded-2xl bg-tan text-white font-medium flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-tan/25"
+                disabled={!isValidNumber}
+                className="flex-1 h-14 rounded-2xl bg-tan text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-tan/20"
               >
                 <Video className="w-5 h-5" />
-                <span className="text-sm">Video</span>
+                <span>Video</span>
               </motion.button>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="px-6 pb-4 flex justify-center gap-6 border-t border-beige-medium/50 pt-4">
+              <button
+                onClick={handlePaste}
+                className="flex items-center gap-2 text-sm text-taupe hover:text-deep-brown transition-colors"
+              >
+                <span className="w-8 h-8 rounded-full bg-beige-light flex items-center justify-center">
+                  <span className="text-xs">📋</span>
+                </span>
+                Paste
+              </button>
             </div>
           </motion.div>
         </>
@@ -396,8 +545,8 @@ export default function CallsPage() {
           <Plus className="w-7 h-7" />
         </motion.button>
 
-        {/* Compact Dialer Overlay */}
-        <CompactDialer
+        {/* Modern Bottom Sheet Dialer */}
+        <ModernDialer
           isOpen={showDialer}
           onClose={() => setShowDialer(false)}
           onCall={handleCall}
