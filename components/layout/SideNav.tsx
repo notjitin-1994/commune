@@ -44,20 +44,22 @@ export function SideNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative",
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative overflow-hidden",
                     isActive
                       ? "text-red-oxide bg-red-oxide/5"
                       : "text-taupe hover:text-deep-brown hover:bg-beige-medium/50"
                   )}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="sideNavIndicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-oxide rounded-r-full"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  <Icon className="w-5 h-5" />
+                  <div className="relative flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
+                    <Icon className="w-5 h-5 relative z-10" />
+                    {isActive && (
+                      <motion.div
+                        layoutId="sideNavIndicator"
+                        className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-oxide rounded-full"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                  </div>
                   <span className="font-medium text-sm">{item.label}</span>
                 </Link>
               </li>

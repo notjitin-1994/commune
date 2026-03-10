@@ -34,21 +34,21 @@ export function BottomNav() {
                 isActive ? "text-red-oxide" : "text-taupe"
               )}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="bottomNavIndicator"
-                  className="absolute top-1 w-10 h-1 bg-red-oxide rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
               <div className={cn(
-                "p-2 rounded-xl transition-colors",
+                "relative p-2.5 rounded-2xl transition-colors overflow-hidden",
                 isActive ? "bg-red-oxide/10" : ""
               )}>
-                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className="w-5 h-5 relative z-10" strokeWidth={isActive ? 2.5 : 2} />
+                {isActive && (
+                  <motion.div
+                    layoutId="bottomNavIndicator"
+                    className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-oxide rounded-full"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium mt-0.5",
+                "text-[10px] font-medium mt-1",
                 isActive ? "text-red-oxide" : "text-taupe"
               )}>
                 {item.label}
