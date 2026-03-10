@@ -360,7 +360,7 @@ a {
 .location-fab {
   position: absolute;
   right: 16px;
-  bottom: calc(80px + env(safe-area-inset-bottom));
+  bottom: 24px;
   width: 48px;
   height: 48px;
   background: white;
@@ -371,6 +371,12 @@ a {
   justify-content: center;
   z-index: 50;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@media (min-width: 1024px) {
+  .location-fab {
+    bottom: 24px;
+  }
 }
 
 .location-fab:active {
@@ -402,7 +408,7 @@ a {
 .add-location-btn {
   position: absolute;
   left: 16px;
-  bottom: calc(80px + env(safe-area-inset-bottom));
+  bottom: 24px;
   background: var(--red-oxide);
   color: white;
   padding: 12px 20px;
@@ -415,6 +421,12 @@ a {
   align-items: center;
   gap: 6px;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@media (min-width: 1024px) {
+  .add-location-btn {
+    bottom: 24px;
+  }
 }
 
 .add-location-btn:active {
@@ -566,7 +578,7 @@ a {
 /* Toast notifications */
 .toast {
   position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom));
+  bottom: calc(88px + env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
   padding: 14px 20px;
