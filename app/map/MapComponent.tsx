@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Crosshair, Plus, MapPin, X } from "lucide-react";
+import { MapPin } from "lucide-react";
 import L from "leaflet";
 import { Flag } from "@/lib/types";
 import { getCategoryColor, getCategoryLabel } from "@/lib/utils/helpers";
@@ -61,9 +60,6 @@ interface MapComponentProps {
   onFlagClick: (flag: Flag) => void;
   onMapClick: (lat: number, lng: number) => void;
   userLocation: { lat: number; lng: number } | null;
-  onGetLocation: () => void;
-  isLocating: boolean;
-  onAddLocationClick: () => void;
   selectedFlagId?: string | null;
   targetFlag?: { lat: number; lng: number } | null;
 }
@@ -73,9 +69,6 @@ export function MapComponent({
   onFlagClick,
   onMapClick,
   userLocation,
-  onGetLocation,
-  isLocating,
-  onAddLocationClick,
   selectedFlagId,
   targetFlag,
 }: MapComponentProps) {
@@ -243,36 +236,6 @@ export function MapComponent({
         <MapPin className="w-4 h-4 text-red-oxide" />
         <span>Tap anywhere to add a flag</span>
       </div>
-
-      {/* Add Current Location Button - Left side */}
-      <AnimatePresence>
-        {userLocation && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, x: -20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: -20 }}
-            onClick={onAddLocationClick}
-            className="add-location-btn"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add here</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Location Button - Right side */}
-      <button
-        onClick={onGetLocation}
-        disabled={isLocating}
-        className="location-fab"
-        aria-label="Get my location"
-      >
-        {isLocating ? (
-          <div className="w-5 h-5 border-2 border-red-oxide border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <Crosshair className="w-5 h-5 text-deep-brown" />
-        )}
-      </button>
     </>
   );
 }

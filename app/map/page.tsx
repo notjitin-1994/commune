@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, AlertTriangle, MapPin, X, Info, Navigation, ChevronDown, Crosshair, ArrowLeft, TriangleAlert } from "lucide-react";
+import { Search, AlertTriangle, MapPin, X, Info, Navigation, ChevronDown, Crosshair, ArrowLeft, TriangleAlert, Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { AppShell } from "@/components/layout/AppShell";
 import { CategoryPill } from "@/components/shared/CategoryPill";
@@ -230,7 +230,7 @@ function MapPageContent() {
 
   return (
     <AppShell>
-      <div className="h-[calc(100vh-64px-env(safe-area-inset-bottom))] lg:h-screen flex flex-col bg-beige-light overflow-hidden">
+      <div className="fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] lg:static lg:h-screen flex flex-col bg-beige-light">
         {/* Mobile Header - Compact */}
         <header className="mobile-header px-4 py-3">
           <div className="flex items-center justify-between gap-3">
@@ -353,13 +353,38 @@ function MapPageContent() {
             onFlagClick={handleFlagClick}
             onMapClick={handleMapClick}
             userLocation={userLocation}
-            onGetLocation={handleGetLocation}
-            isLocating={isLocating}
-            onAddLocationClick={handleAddCurrentLocation}
             selectedFlagId={selectedFlag?.id}
             targetFlag={targetFlag}
           />
         </div>
+
+        {/* Floating Action Buttons - Fixed position relative to viewport */}
+        {userLocation && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={handleAddCurrentLocation}
+            className="fixed left-4 z-40 flex items-center gap-2 px-5 py-3 bg-red-oxide text-white rounded-full font-medium text-sm shadow-lg active:scale-95 transition-transform"
+            style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add here</span>
+          </motion.button>
+        )}
+
+        <button
+          onClick={handleGetLocation}
+          disabled={isLocating}
+          className="fixed right-4 z-40 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-70"
+          style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+          aria-label="Get my location"
+        >
+          {isLocating ? (
+            <div className="w-5 h-5 border-2 border-red-oxide border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Crosshair className="w-5 h-5 text-deep-brown" />
+          )}
+        </button>
 
         {/* Add Flag Bottom Sheet */}
         <BottomSheet
