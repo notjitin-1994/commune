@@ -230,7 +230,7 @@ function MapPageContent() {
 
   return (
     <AppShell>
-      <div className="fixed inset-x-0 top-0 bottom-[calc(64px+env(safe-area-inset-bottom))] lg:static lg:h-screen flex flex-col bg-beige-light">
+      <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
         {/* Mobile Header - Compact */}
         <header className="mobile-header px-4 py-3">
           <div className="flex items-center justify-between gap-3">
@@ -365,7 +365,7 @@ function MapPageContent() {
             animate={{ opacity: 1, scale: 1 }}
             onClick={handleAddCurrentLocation}
             className="fixed left-4 z-40 flex items-center gap-2 px-5 py-3 bg-red-oxide text-white rounded-full font-medium text-sm shadow-lg active:scale-95 transition-transform"
-            style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+            style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}
           >
             <Plus className="w-5 h-5" />
             <span>Add here</span>

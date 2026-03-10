@@ -50,7 +50,7 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
       )}
 
       {/* Main Content */}
-      <main className={`${hideNav ? '' : 'lg:ml-64'} pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0`}>
+      <main className={`${hideNav ? '' : 'lg:ml-64'} pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0`} style={{ minHeight: '100dvh' }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
