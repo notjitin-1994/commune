@@ -81,7 +81,7 @@ export function MapComponent({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const defaultLocation = userLocation || { lat: 40.7128, lng: -74.006 };
+    const defaultLocation = userLocation || { lat: 19.0760, lng: 72.8777 };
 
     const map = L.map(mapContainerRef.current, {
       center: [defaultLocation.lat, defaultLocation.lng],

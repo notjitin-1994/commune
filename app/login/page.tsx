@@ -142,7 +142,7 @@ export default function LoginPage() {
                   <input
                     type="tel"
                     inputMode="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="form-input text-center text-lg tracking-wide"
