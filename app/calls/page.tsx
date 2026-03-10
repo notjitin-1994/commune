@@ -2,7 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Video, Clock, Plus, X, User, Hash } from "lucide-react";
+import { 
+  Phone, 
+  PhoneIncoming, 
+  PhoneOutgoing, 
+  PhoneMissed, 
+  Video, 
+  Clock, 
+  Plus, 
+  X, 
+  Delete,
+  ChevronLeft,
+  User
+} from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { CallLog, User as UserType } from "@/lib/types";
@@ -14,11 +26,149 @@ interface CallLogWithUsers extends CallLog {
   otherParty?: UserType;
 }
 
+// Modern compact dialer component
+function CompactDialer({
+  isOpen,
+  onClose,
+  onCall,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCall: (number: string, type: 'audio' | 'video') => void;
+}) {
+  const [number, setNumber] = useState("");
+
+  const dialPad = [
+    { num: '1', sub: '' },
+    { num: '2', sub: 'ABC' },
+    { num: '3', sub: 'DEF' },
+    { num: '4', sub: 'GHI' },
+    { num: '5', sub: 'JKL' },
+    { num: '6', sub: 'MNO' },
+    { num: '7', sub: 'PQRS' },
+    { num: '8', sub: 'TUV' },
+    { num: '9', sub: 'WXYZ' },
+    { num: '*', sub: '' },
+    { num: '0', sub: '+' },
+    { num: '#', sub: '' },
+  ];
+
+  const handlePress = (key: string) => {
+    if (number.length < 15) setNumber(prev => prev + key);
+  };
+
+  const handleBackspace = () => {
+    setNumber(prev => prev.slice(0, -1));
+  };
+
+  const handleCall = (type: 'audio' | 'video') => {
+    if (number) {
+      onCall(number, type);
+      setNumber("");
+      onClose();
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop - glassmorphism */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-espresso/60 backdrop-blur-md z-[100]"
+          />
+
+          {/* Compact Dialer Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[320px] bg-white rounded-3xl shadow-2xl overflow-hidden"
+          >
+            {/* Header with close */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+              <span className="text-sm font-medium text-taupe">New Call</span>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-full bg-beige-light flex items-center justify-center active:bg-beige-medium transition-colors"
+              >
+                <X className="w-4 h-4 text-taupe" />
+              </button>
+            </div>
+
+            {/* Number Display */}
+            <div className="px-4 py-3 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-3xl font-mono font-semibold text-espresso tracking-wider">
+                  {number || "Enter number"}
+                </span>
+              </div>
+              {number && (
+                <button
+                  onClick={handleBackspace}
+                  className="mt-2 px-3 py-1 text-xs text-taupe hover:text-red-oxide transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Compact Number Pad */}
+            <div className="px-4 pb-3">
+              <div className="grid grid-cols-3 gap-2">
+                {dialPad.map((key) => (
+                  <motion.button
+                    key={key.num}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => handlePress(key.num)}
+                    className="h-14 rounded-2xl bg-beige-light/50 active:bg-beige-medium flex flex-col items-center justify-center transition-colors"
+                  >
+                    <span className="text-xl font-semibold text-espresso">{key.num}</span>
+                    {key.sub && (
+                      <span className="text-[9px] text-taupe font-medium tracking-wider">{key.sub}</span>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Call Actions */}
+            <div className="px-4 pb-4 pt-2 flex gap-3">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleCall('audio')}
+                disabled={!number}
+                className="flex-1 h-12 rounded-2xl bg-sage text-white font-medium flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-sage/25"
+              >
+                <Phone className="w-5 h-5" />
+                <span className="text-sm">Audio</span>
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleCall('video')}
+                disabled={!number}
+                className="flex-1 h-12 rounded-2xl bg-tan text-white font-medium flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-tan/25"
+              >
+                <Video className="w-5 h-5" />
+                <span className="text-sm">Video</span>
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function CallsPage() {
   const [callLogs, setCallLogs] = useState<CallLogWithUsers[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'missed'>('all');
   const [showDialer, setShowDialer] = useState(false);
-  const [dialNumber, setDialNumber] = useState("");
 
   useEffect(() => {
     const logs = JSON.parse(localStorage.getItem('callLogs') || '[]');
@@ -38,18 +188,26 @@ export default function CallsPage() {
     ));
   }, []);
 
-  const getCallIcon = (call: CallLogWithUsers) => {
+  const getCallStatusVisual = (call: CallLogWithUsers) => {
     if (call.status === 'missed') {
-      return <PhoneMissed className="w-5 h-5 text-red-oxide" />;
+      return {
+        icon: <PhoneMissed className="w-4 h-4" />,
+        color: 'text-red-oxide',
+        bgColor: 'bg-red-oxide/10',
+      };
     }
     if (call.direction === 'incoming') {
-      return <PhoneIncoming className="w-5 h-5 text-sage" />;
+      return {
+        icon: <PhoneIncoming className="w-4 h-4" />,
+        color: 'text-sage',
+        bgColor: 'bg-sage/10',
+      };
     }
-    return <PhoneOutgoing className="w-5 h-5 text-tan" />;
-  };
-
-  const getCallTypeIcon = (callType: string) => {
-    return callType === 'video' ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />;
+    return {
+      icon: <PhoneOutgoing className="w-4 h-4" />,
+      color: 'text-tan',
+      bgColor: 'bg-tan/10',
+    };
   };
 
   const filteredCalls = activeTab === 'missed' 
@@ -58,70 +216,47 @@ export default function CallsPage() {
 
   const groupedCalls = filteredCalls.reduce((groups, call) => {
     const date = new Date(call.startedAt).toDateString();
-    if (!groups[date]) {
-      groups[date] = [];
-    }
+    if (!groups[date]) groups[date] = [];
     groups[date].push(call);
     return groups;
   }, {} as Record<string, CallLogWithUsers[]>);
 
-  const handleDialNumber = (num: string) => {
-    if (dialNumber.length < 15) {
-      setDialNumber(prev => prev + num);
-    }
+  const handleCall = (number: string, type: 'audio' | 'video') => {
+    console.log(`Calling ${number} via ${type}`);
   };
-
-  const handleBackspace = () => {
-    setDialNumber(prev => prev.slice(0, -1));
-  };
-
-  const handleCall = (type: 'audio' | 'video') => {
-    if (!dialNumber) return;
-    console.log(`Calling ${dialNumber} via ${type}`);
-    setShowDialer(false);
-    setDialNumber("");
-  };
-
-  const dialPadButtons = [
-    { num: '1', letters: '' },
-    { num: '2', letters: 'ABC' },
-    { num: '3', letters: 'DEF' },
-    { num: '4', letters: 'GHI' },
-    { num: '5', letters: 'JKL' },
-    { num: '6', letters: 'MNO' },
-    { num: '7', letters: 'PQRS' },
-    { num: '8', letters: 'TUV' },
-    { num: '9', letters: 'WXYZ' },
-    { num: '*', letters: '' },
-    { num: '0', letters: '+' },
-    { num: '#', letters: '' },
-  ];
 
   return (
     <AppShell>
       <div className="min-h-full bg-beige-light">
-        {/* Header */}
-        <header className="mobile-header px-4 py-3">
-          <h1 className="font-playfair text-2xl font-bold text-espresso mb-3">Calls</h1>
+        {/* Modern Header */}
+        <header className="px-4 pt-4 pb-3 bg-beige-light/95 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="font-playfair text-2xl font-bold text-espresso">Calls</h1>
+            
+            {/* Edit/Options Button */}
+            <button className="p-2 rounded-xl bg-beige-medium/50 text-taupe hover:bg-beige-medium transition-colors">
+              <Delete className="w-5 h-5" />
+            </button>
+          </div>
           
-          {/* Tabs */}
-          <div className="flex gap-2">
+          {/* Pill-style Segmented Tabs */}
+          <div className="flex p-1 bg-beige-medium/40 rounded-2xl">
             <button
               onClick={() => setActiveTab('all')}
-              className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === 'all'
-                  ? 'bg-red-oxide text-white shadow-button'
-                  : 'bg-beige-light text-deep-brown active:bg-beige-medium'
+                  ? 'bg-white text-espresso shadow-sm'
+                  : 'text-taupe hover:text-deep-brown'
               }`}
             >
-              All Calls
+              All
             </button>
             <button
               onClick={() => setActiveTab('missed')}
-              className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === 'missed'
-                  ? 'bg-red-oxide text-white shadow-button'
-                  : 'bg-beige-light text-deep-brown active:bg-beige-medium'
+                  ? 'bg-white text-red-oxide shadow-sm'
+                  : 'text-taupe hover:text-deep-brown'
               }`}
             >
               Missed
@@ -130,10 +265,11 @@ export default function CallsPage() {
         </header>
 
         {/* Call List */}
-        <div className="px-4 py-4 pb-8">
+        <div className="px-4 py-2 pb-24">
           {Object.entries(groupedCalls).map(([date, calls]) => (
             <div key={date} className="mb-6">
-              <h3 className="text-xs font-semibold text-taupe uppercase tracking-wide mb-3 sticky top-0 bg-beige-light py-2">
+              {/* Date Header */}
+              <h3 className="text-xs font-semibold text-taupe/80 uppercase tracking-wider mb-3 px-1">
                 {new Date(date).toDateString() === new Date().toDateString() 
                   ? 'Today' 
                   : new Date(date).toDateString() === new Date(Date.now() - 86400000).toDateString()
@@ -141,206 +277,131 @@ export default function CallsPage() {
                   : formatDate(date)}
               </h3>
               
-              <motion.div 
-                className="space-y-3"
-                initial="initial"
-                animate="animate"
-                variants={{
-                  animate: { transition: { staggerChildren: 0.03 } }
-                }}
-              >
-                {calls.map((call, index) => (
-                  <motion.div
-                    key={call.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03, duration: 0.3 }}
-                    className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-card active:scale-[0.99] transition-transform"
-                  >
-                    <UserAvatar 
-                      name={call.otherParty?.name || "Unknown"} 
-                      size="md"
-                    />
+              {/* Call Cards */}
+              <div className="space-y-2">
+                {calls.map((call, index) => {
+                  const status = getCallStatusVisual(call);
+                  const isMissed = call.status === 'missed';
+                  
+                  return (
+                    <motion.div
+                      key={call.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03, duration: 0.25 }}
+                      className="group bg-white rounded-2xl p-3 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow"
+                    >
+                      {/* Avatar */}
+                      <div className="relative">
+                        <UserAvatar 
+                          name={call.otherParty?.name || "Unknown"} 
+                          size="md"
+                        />
+                        {/* Status Indicator */}
+                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${status.bgColor} flex items-center justify-center border-2 border-white`}>
+                          <span className={status.color}>{status.icon}</span>
+                        </div>
+                      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-deep-brown text-sm truncate">
+                      {/* Call Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`font-semibold text-sm truncate ${
+                          isMissed ? 'text-red-oxide' : 'text-espresso'
+                        }`}>
                           {call.otherParty?.name || "Unknown"}
                         </h3>
-                        {call.status === 'missed' && (
-                          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-red-oxide" />
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-3 text-xs text-taupe mt-1">
-                        <span className="flex items-center gap-1">
-                          {getCallIcon(call)}
-                          {call.direction === 'incoming' ? 'Incoming' : 'Outgoing'}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          {getCallTypeIcon(call.callType)}
-                          {call.callType === 'video' ? 'Video' : 'Audio'}
-                        </span>
-                        {call.durationSeconds && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDuration(call.durationSeconds)}
+                        
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`text-xs ${status.color}`}>
+                            {call.direction === 'incoming' ? 'Incoming' : 'Outgoing'}
                           </span>
-                        )}
+                          <span className="w-1 h-1 rounded-full bg-taupe/30" />
+                          <span className="text-xs text-taupe flex items-center gap-1">
+                            {call.callType === 'video' ? (
+                              <><Video className="w-3 h-3" /> Video</>
+                            ) : (
+                              <><Phone className="w-3 h-3" /> Audio</>
+                            )}
+                          </span>
+                          {call.durationSeconds && (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-taupe/30" />
+                              <span className="text-xs text-taupe">
+                                {formatDuration(call.durationSeconds)}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs text-taupe">{formatTime(call.startedAt)}</p>
-                      <div className="flex gap-1 mt-2 justify-end">
-                        <button className="w-9 h-9 rounded-full bg-sage/10 flex items-center justify-center active:bg-sage/20 transition-colors">
-                          <Phone className="w-4 h-4 text-sage" />
-                        </button>
-                        <button className="w-9 h-9 rounded-full bg-tan/10 flex items-center justify-center active:bg-tan/20 transition-colors">
-                          <Video className="w-4 h-4 text-tan" />
-                        </button>
+                      {/* Right Side - Time & Actions */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-taupe/70 font-medium">
+                          {formatTime(call.startedAt)}
+                        </span>
+                        
+                        {/* Quick Actions */}
+                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button className="w-9 h-9 rounded-full bg-sage/10 text-sage flex items-center justify-center hover:bg-sage/20 transition-colors">
+                            <Phone className="w-4 h-4" />
+                          </button>
+                          <button className="w-9 h-9 rounded-full bg-tan/10 text-tan flex items-center justify-center hover:bg-tan/20 transition-colors">
+                            <Video className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           ))}
 
+          {/* Empty State */}
           {filteredCalls.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-beige-medium flex items-center justify-center">
-                <Phone className="w-10 h-10 text-taupe" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20"
+            >
+              <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-beige-medium/50 flex items-center justify-center">
+                <Phone className="w-10 h-10 text-taupe/50" />
               </div>
               <h3 className="font-playfair text-lg font-semibold text-espresso mb-2">
                 No calls yet
               </h3>
-              <p className="text-taupe text-sm">
-                Your call history will appear here
+              <p className="text-sm text-taupe max-w-[200px] mx-auto">
+                {activeTab === 'missed' 
+                  ? "You have no missed calls"
+                  : "Your call history will appear here"
+                }
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
 
-        {/* Floating Dialer Button */}
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 lg:bottom-8">
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowDialer(true)}
-            className="w-16 h-16 rounded-full bg-red-oxide text-white shadow-2xl flex items-center justify-center"
-            style={{ 
-              boxShadow: '0 8px 30px rgba(156, 61, 50, 0.4)',
-            }}
-          >
-            <Plus className="w-8 h-8" />
-          </motion.button>
-        </div>
+        {/* Material Design 3 FAB - Bottom Right */}
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowDialer(true)}
+          className="fixed right-5 z-40 w-14 h-14 rounded-2xl bg-red-oxide text-white shadow-xl flex items-center justify-center"
+          style={{ 
+            bottom: 'calc(88px + env(safe-area-inset-bottom))',
+            boxShadow: '0 4px 20px rgba(156, 61, 50, 0.35), 0 2px 8px rgba(156, 61, 50, 0.25)'
+          }}
+        >
+          <Plus className="w-7 h-7" />
+        </motion.button>
 
-        {/* Dialer Modal */}
-        <AnimatePresence>
-          {showDialer && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowDialer(false)}
-                className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
-              />
-              
-              {/* Dialer */}
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
-                style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
-              >
-                {/* Handle */}
-                <div className="flex flex-col items-center pt-3 pb-4">
-                  <div className="w-10 h-1.5 bg-warm-sand/50 rounded-full" />
-                </div>
-
-                {/* Number Display */}
-                <div className="px-6 py-4 border-b border-beige-medium">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {dialNumber ? (
-                        <span className="text-2xl font-mono font-semibold text-deep-brown tracking-wider">
-                          {dialNumber}
-                        </span>
-                      ) : (
-                        <span className="text-lg text-taupe">Enter number</span>
-                      )}
-                    </div>
-                    {dialNumber && (
-                      <button 
-                        onClick={handleBackspace}
-                        className="p-2 rounded-full hover:bg-beige-light active:bg-beige-medium transition-colors"
-                      >
-                        <X className="w-5 h-5 text-taupe" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dial Pad */}
-                <div className="px-6 py-4">
-                  <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-                    {dialPadButtons.map((btn) => (
-                      <button
-                        key={btn.num}
-                        onClick={() => handleDialNumber(btn.num)}
-                        className="aspect-square rounded-2xl bg-beige-light active:bg-beige-medium transition-colors flex flex-col items-center justify-center"
-                      >
-                        <span className="text-2xl font-semibold text-deep-brown">{btn.num}</span>
-                        {btn.letters && (
-                          <span className="text-[10px] text-taupe uppercase tracking-wider">{btn.letters}</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Call Buttons */}
-                  <div className="flex gap-3 mt-6 max-w-xs mx-auto">
-                    <button
-                      onClick={() => handleCall('audio')}
-                      disabled={!dialNumber}
-                      className="flex-1 h-14 rounded-2xl bg-sage text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 transition-transform"
-                    >
-                      <Phone className="w-5 h-5" />
-                      Call
-                    </button>
-                    <button
-                      onClick={() => handleCall('video')}
-                      disabled={!dialNumber}
-                      className="flex-1 h-14 rounded-2xl bg-tan text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 transition-transform"
-                    >
-                      <Video className="w-5 h-5" />
-                      Video
-                    </button>
-                  </div>
-
-                  {/* Close Button */}
-                  <button
-                    onClick={() => {
-                      setShowDialer(false);
-                      setDialNumber("");
-                    }}
-                    className="w-full mt-4 py-3 text-taupe font-medium active:text-deep-brown transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        {/* Compact Dialer Overlay */}
+        <CompactDialer
+          isOpen={showDialer}
+          onClose={() => setShowDialer(false)}
+          onCall={handleCall}
+        />
       </div>
     </AppShell>
   );
