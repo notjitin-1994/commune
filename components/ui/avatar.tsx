@@ -22,7 +22,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       <div
         ref={ref}
         className={cn(
-          "relative inline-flex items-center justify-center rounded-full overflow-hidden bg-beige-medium",
+          "relative inline-flex items-center justify-center rounded-full overflow-hidden bg-gradient-to-br from-navy-700 to-navy-600",
           sizeClasses[size],
           className
         )}
@@ -35,7 +35,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="font-semibold text-deep-brown">
+          <span className="font-semibold text-white">
             {getInitials(name)}
           </span>
         )}

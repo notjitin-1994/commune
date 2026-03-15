@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Send, ArrowLeft, Phone, Video, ChevronRight } from "lucide-react";
+import { Search, Send, ChevronRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -26,46 +26,23 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    // Force seed data if missing
     if (typeof window !== 'undefined') {
       const storedMessages = JSON.parse(localStorage.getItem('messages') || '[]');
       const storedConversations = JSON.parse(localStorage.getItem('conversations') || '[]');
       const currentUserId = user?.id;
       
-      // Check if current user has any conversations
       const userHasConversations = currentUserId && storedConversations.some(
         (c: any) => c.participantIds?.includes(currentUserId)
       );
       
-      // If user has no conversations, create demo conversations for them
       if (currentUserId && !userHasConversations) {
-        console.log('Creating demo conversations for user:', currentUserId);
-        
-        // Create new conversations with current user replacing user-1
         const newConversations = [
-          {
-            id: 'conv-1',
-            participantIds: [currentUserId, 'user-2'],
-            lastMessageAt: new Date(Date.now() - 300000).toISOString(),
-          },
-          {
-            id: 'conv-2',
-            participantIds: [currentUserId, 'user-3'],
-            lastMessageAt: new Date(Date.now() - 3600000).toISOString(),
-          },
-          {
-            id: 'conv-3',
-            participantIds: [currentUserId, 'user-4'],
-            lastMessageAt: new Date(Date.now() - 7200000).toISOString(),
-          },
-          {
-            id: 'conv-4',
-            participantIds: [currentUserId, 'user-5'],
-            lastMessageAt: new Date(Date.now() - 18000000).toISOString(),
-          },
+          { id: 'conv-1', participantIds: [currentUserId, 'user-2'], lastMessageAt: new Date(Date.now() - 300000).toISOString() },
+          { id: 'conv-2', participantIds: [currentUserId, 'user-3'], lastMessageAt: new Date(Date.now() - 3600000).toISOString() },
+          { id: 'conv-3', participantIds: [currentUserId, 'user-4'], lastMessageAt: new Date(Date.now() - 7200000).toISOString() },
+          { id: 'conv-4', participantIds: [currentUserId, 'user-5'], lastMessageAt: new Date(Date.now() - 18000000).toISOString() },
         ];
         
-        // Update message sender IDs from user-1 to current user
         const newMessages = demoMessages.map((msg: any) => ({
           ...msg,
           senderId: msg.senderId === 'user-1' ? currentUserId : msg.senderId,
@@ -74,7 +51,6 @@ export default function MessagesPage() {
         localStorage.setItem('conversations', JSON.stringify(newConversations));
         localStorage.setItem('messages', JSON.stringify(newMessages));
         
-        // Seed users if missing
         const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
         if (storedUsers.length === 0) {
           const demoUsers = [
@@ -84,16 +60,10 @@ export default function MessagesPage() {
             { id: 'user-5', name: 'David Park', phone: '+6677889900', isAdmin: false, firstName: 'David', lastName: 'Park', email: 'david.park@gmail.com', bio: 'Local homeowner and community advocate' },
           ];
           localStorage.setItem('users', JSON.stringify(demoUsers));
-          console.log('✅ Seeded users:', demoUsers.length);
         }
-        
-        console.log('✅ Created conversations for current user:', newConversations.length);
-        console.log('✅ Created messages:', newMessages.length);
       } else if (storedMessages.length === 0) {
-        // Fall back to default seeding if completely empty
         localStorage.setItem('messages', JSON.stringify(demoMessages));
         localStorage.setItem('conversations', JSON.stringify(demoConversations));
-        console.log('✅ Seeded default demo data');
       }
     }
     
@@ -120,7 +90,6 @@ export default function MessagesPage() {
           new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
         )[0];
         
-        // Calculate unread count (messages not from current user)
         const unreadCount = convMessages.filter(
           m => m.senderId !== user?.id && new Date(m.sentAt).getTime() > new Date(conv.lastMessageAt).getTime() - 86400000
         ).length;
@@ -147,7 +116,6 @@ export default function MessagesPage() {
            otherParticipant?.phone?.includes(searchQuery);
   });
 
-  // Group conversations by date
   const groupConversationsByDate = (conversations: ConversationWithParticipants[]) => {
     const groups: { [key: string]: ConversationWithParticipants[] } = {};
     
@@ -180,16 +148,26 @@ export default function MessagesPage() {
     <AppShell>
       <div className="min-h-full bg-beige-light">
         {/* Header */}
-        <header className="mobile-header px-4 py-3 sticky top-0 z-10">
-          <h1 className="font-playfair text-2xl font-bold text-espresso mb-3">Messages</h1>
+        <header className="bg-white/95 backdrop-blur px-6 py-5 sticky top-0 z-10 border-b border-beige-medium">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="font-playfair text-3xl font-bold text-espresso">Messages</h1>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-11 h-11 rounded-xl bg-red-oxide flex items-center justify-center text-white shadow-lg shadow-red-oxide/25"
+            >
+              <Plus className="w-5 h-5" />
+            </motion.button>
+          </div>
+          
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-taupe" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
-              className="form-input pl-10"
+              className="form-input pl-12"
             />
           </div>
         </header>
@@ -204,7 +182,7 @@ export default function MessagesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
               >
-                <h3 className="text-xs font-semibold text-taupe uppercase tracking-wide mb-3 px-1">
+                <h3 className="text-xs font-semibold text-taupe uppercase tracking-wider mb-3 px-2">
                   {dateLabel}
                 </h3>
                 
@@ -219,16 +197,18 @@ export default function MessagesPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
                         onClick={() => handleOpenChat(conversation.id)}
-                        className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-card active:scale-[0.99] transition-transform"
+                        className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 border border-beige-medium shadow-card"
                       >
                         <div className="relative">
-                          <UserAvatar 
-                            name={otherParticipant?.name || "Unknown"} 
-                            showStatus 
-                            isOnline={isOnline}
-                            size="lg"
-                          />
+                          <div className="w-14 h-14 rounded-2xl bg-beige-medium flex items-center justify-center text-espresso font-semibold text-lg">
+                            {otherParticipant?.name?.[0]?.toUpperCase() || "?"}
+                          </div>
+                          {isOnline && (
+                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-sage border-3 border-white" />
+                          )}
                           {conversation.unreadCount && conversation.unreadCount > 0 && (
                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-oxide text-white text-xs font-bold rounded-full flex items-center justify-center">
                               {conversation.unreadCount}
@@ -238,7 +218,7 @@ export default function MessagesPage() {
                         
                         <div className="flex-1 text-left min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <h3 className="font-semibold text-deep-brown text-sm truncate">
+                            <h3 className="font-semibold text-espresso text-base truncate">
                               {otherParticipant?.name || "Unknown"}
                             </h3>
                             {conversation.lastMessage && (
@@ -248,7 +228,7 @@ export default function MessagesPage() {
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-1 mt-0.5">
+                          <div className="flex items-center gap-1 mt-1">
                             {conversation.lastMessage?.senderId === user?.id && (
                               <span className="text-xs text-taupe">You: </span>
                             )}
@@ -258,7 +238,7 @@ export default function MessagesPage() {
                           </div>
                         </div>
                         
-                        <ChevronRight className="w-5 h-5 text-taupe flex-shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-warm-sand flex-shrink-0" />
                       </motion.button>
                     );
                   })}
@@ -282,23 +262,6 @@ export default function MessagesPage() {
               <p className="text-taupe text-sm">
                 Start messaging to see conversations here
               </p>
-              
-              {/* Debug Info */}
-              <div className="mt-6 p-4 bg-red-50 rounded-xl text-left max-w-xs mx-auto">
-                <p className="text-xs font-semibold text-red-600 mb-2">Debug Info:</p>
-                <p className="text-xs text-red-500">Current User ID: {user?.id || 'Not logged in'}</p>
-                <p className="text-xs text-red-500">Total Conversations: {conversations.length}</p>
-                <p className="text-xs text-red-500">Total Messages: {messages.length}</p>
-                <button 
-                  onClick={() => {
-                    localStorage.clear();
-                    window.location.reload();
-                  }}
-                  className="mt-3 w-full py-2 bg-red-500 text-white text-xs rounded-lg"
-                >
-                  Clear & Reload
-                </button>
-              </div>
             </motion.div>
           )}
         </div>

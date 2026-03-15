@@ -10,7 +10,7 @@
   --rust: #B85C4F;
   --terracotta: #C67B5C;
   --tan: #D4A373;
-  
+
   /* Neutral Colors */
   --beige-light: #F5F1E8;
   --beige-medium: #E8E0D5;
@@ -18,11 +18,11 @@
   --taupe: #A68A64;
   --deep-brown: #4A3B2C;
   --espresso: #2C1F14;
-  
+
   /* Semantic Colors */
   --sage: #6B8E6B;
   --slate: #5B7C8C;
-  
+
   /* Safe Areas */
   --sat: env(safe-area-inset-top);
   --sar: env(safe-area-inset-right);
@@ -99,7 +99,7 @@ h1, h2, h3, h4, h5, h6 {
   ::-webkit-scrollbar {
     display: none;
   }
-  
+
   * {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -321,13 +321,45 @@ a {
 /* Leaflet Map Styles - Mobile Optimized */
 .leaflet-container {
   font-family: 'Work Sans', sans-serif;
-  background: #e5e3df;
+  background: #F5F1E8;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Fix for mobile browsers - ensure map fills container */
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-tile-pane,
+.leaflet-overlay-pane {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Prevent text selection on map (mobile) */
+.leaflet-container {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Improve touch handling */
+.leaflet-touch .leaflet-bar a {
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
 }
 
 /* Hide zoom controls on mobile */
 @media (max-width: 768px) {
   .leaflet-control-zoom {
     display: none !important;
+  }
+  .leaflet-popup-content-wrapper {
+    max-width: 280px !important;
+  }
+  /* Ensure map is scrollable on mobile */
+  .leaflet-touch {
+    touch-action: pan-x pan-y;
   }
 }
 

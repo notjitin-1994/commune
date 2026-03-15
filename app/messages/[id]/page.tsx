@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, Phone, Video, MoreVertical, Image, Camera, Paperclip, Mic, Check, CheckCheck } from "lucide-react";
+import { Send, ArrowLeft, Phone, Video, MoreVertical, Image, Camera, Paperclip, Mic, Check, CheckCheck, Smile } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useMessageStore } from "@/lib/stores/messageStore";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { Message, User } from "@/lib/types";
@@ -34,12 +33,10 @@ export default function ChatPage() {
     loadData();
   }, [loadData]);
 
-  // Scroll to bottom on load and when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages, conversationId]);
 
-  // Simulate typing indicator randomly
   useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() > 0.7) {
@@ -114,11 +111,9 @@ export default function ChatPage() {
   };
 
   const handleCall = (type: 'audio' | 'video') => {
-    // In a real app, this would initiate a call
     console.log(`Starting ${type} call with`, getOtherParticipant()?.name);
   };
 
-  // Group messages by date
   const groupMessagesByDate = (messages: MessageWithSender[]) => {
     const groups: { [key: string]: MessageWithSender[] } = {};
     
@@ -150,7 +145,7 @@ export default function ChatPage() {
   if (!getConversation()) {
     return (
       <AppShell>
-        <div className="fixed inset-x-0 top-0 flex flex-col items-center justify-center bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
+        <div className="fixed inset-x-0 top-0 flex flex-col items-center justify-center bg-beige-light" style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
           <div className="text-center">
             <p className="text-taupe">Conversation not found</p>
             <button onClick={handleBack} className="mt-4 text-red-oxide font-medium">
@@ -164,30 +159,31 @@ export default function ChatPage() {
 
   return (
     <AppShell>
-      <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
+      <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-beige-light" style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
         {/* Chat Header */}
-        <header className="bg-white px-4 py-3 flex items-center gap-3 shadow-sm sticky top-0 z-10">
-          <button 
+        <header className="bg-white/95 backdrop-blur px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
             onClick={handleBack}
-            className="p-2 -ml-2 rounded-full hover:bg-beige-light active:bg-beige-medium transition-colors"
+            className="w-10 h-10 rounded-xl bg-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-taupe" />
-          </button>
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
           
-          <UserAvatar 
-            name={otherParticipant?.name || "Unknown"} 
-            showStatus 
-            isOnline={true}
-            size="md"
-          />
+          <div className="relative">
+            <div className="w-12 h-12 rounded-xl bg-beige-medium flex items-center justify-center text-espresso font-semibold">
+              {otherParticipant?.name?.[0]?.toUpperCase() || "?"}
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-sage border-3 border-beige-light" />
+          </div>
           
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-deep-brown text-sm truncate">
+            <h2 className="font-semibold text-espresso text-base truncate">
               {otherParticipant?.name || "Unknown"}
             </h2>
-            <p className="text-xs text-sage flex items-center gap-1">
+            <p className="text-xs text-taupe flex items-center gap-1">
               {isTyping ? (
-                <span className="italic text-tan">typing...</span>
+                <span className="text-red-oxide">typing...</span>
               ) : (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-sage" />
@@ -198,21 +194,26 @@ export default function ChatPage() {
           </div>
           
           <div className="flex items-center gap-1">
-            <button 
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleCall('audio')}
-              className="p-2.5 rounded-full hover:bg-beige-light active:bg-beige-medium transition-colors"
+              className="w-10 h-10 rounded-xl bg-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso transition-colors"
             >
-              <Phone className="w-5 h-5 text-taupe" />
-            </button>
-            <button 
+              <Phone className="w-5 h-5" />
+            </motion.button>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleCall('video')}
-              className="p-2.5 rounded-full hover:bg-beige-light active:bg-beige-medium transition-colors"
+              className="w-10 h-10 rounded-xl bg-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso transition-colors"
             >
-              <Video className="w-5 h-5 text-taupe" />
-            </button>
-            <button className="p-2.5 rounded-full hover:bg-beige-light active:bg-beige-medium transition-colors">
-              <MoreVertical className="w-5 h-5 text-taupe" />
-            </button>
+              <Video className="w-5 h-5" />
+            </motion.button>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-xl bg-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso transition-colors"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </motion.button>
           </div>
         </header>
 
@@ -222,15 +223,14 @@ export default function ChatPage() {
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-4 mb-6 shadow-sm"
+            className="bg-white/95 backdrop-blur rounded-2xl p-4 mb-6"
           >
             <div className="flex items-center gap-3">
-              <UserAvatar 
-                name={otherParticipant?.name || "Unknown"} 
-                size="lg"
-              />
+              <div className="w-14 h-14 rounded-xl bg-beige-medium flex items-center justify-center text-espresso font-semibold text-lg">
+                {otherParticipant?.name?.[0]?.toUpperCase() || "?"}
+              </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-deep-brown">
+                <h3 className="font-semibold text-espresso">
                   {otherParticipant?.name || "Unknown"}
                 </h3>
                 <p className="text-xs text-taupe">
@@ -249,14 +249,12 @@ export default function ChatPage() {
           <div className="space-y-6">
             {Object.entries(groupedMessages).map(([dateLabel, msgs]) => (
               <div key={dateLabel}>
-                {/* Date Divider */}
                 <div className="flex items-center justify-center mb-4">
                   <span className="text-xs text-taupe bg-beige-medium/50 px-3 py-1 rounded-full">
                     {dateLabel}
                   </span>
                 </div>
 
-                {/* Messages for this date */}
                 <div className="space-y-3">
                   <AnimatePresence>
                     {msgs.map((message, index) => {
@@ -271,23 +269,20 @@ export default function ChatPage() {
                           transition={{ duration: 0.2 }}
                           className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-end gap-2`}
                         >
-                          {/* Avatar for received messages */}
                           {!isOwn && showAvatar && (
                             <div className="flex-shrink-0 mb-1">
-                              <UserAvatar 
-                                name={message.sender?.name || "Unknown"} 
-                                size="sm"
-                              />
+                              <div className="w-8 h-8 rounded-lg bg-beige-medium flex items-center justify-center text-espresso text-xs font-medium">
+                                {message.sender?.name?.[0]?.toUpperCase() || "?"}
+                              </div>
                             </div>
                           )}
                           {!isOwn && !showAvatar && <div className="w-8" />}
 
-                          {/* Message Bubble */}
                           <div 
                             className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                               isOwn 
                                 ? 'bg-red-oxide text-white rounded-br-md' 
-                                : 'bg-white text-deep-brown rounded-bl-md shadow-sm'
+                                : 'bg-white/95 backdrop-blur text-deep-brown rounded-bl-md'
                             }`}
                           >
                             <p className="text-sm leading-relaxed">{message.content}</p>
@@ -314,7 +309,6 @@ export default function ChatPage() {
               </div>
             ))}
 
-            {/* Typing Indicator */}
             <AnimatePresence>
               {isTyping && (
                 <motion.div
@@ -323,15 +317,14 @@ export default function ChatPage() {
                   exit={{ opacity: 0, y: 10 }}
                   className="flex items-end gap-2"
                 >
-                  <UserAvatar 
-                    name={otherParticipant?.name || "Unknown"} 
-                    size="sm"
-                  />
-                  <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-beige-medium flex items-center justify-center text-espresso text-xs font-medium">
+                    {otherParticipant?.name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div className="bg-white/95 backdrop-blur rounded-2xl rounded-bl-md px-4 py-3">
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 rounded-full bg-taupe/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 rounded-full bg-taupe/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 rounded-full bg-taupe/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-2 h-2 rounded-full bg-warm-sand animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 rounded-full bg-warm-sand animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 rounded-full bg-warm-sand animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </div>
                 </motion.div>
@@ -343,8 +336,7 @@ export default function ChatPage() {
         </div>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-beige-medium px-4 py-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-          {/* Attachment Menu */}
+        <div className="bg-white/95 backdrop-blur border-t border-beige-medium px-4 py-3" style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}>
           <AnimatePresence>
             {showAttachmentMenu && (
               <motion.div
@@ -354,37 +346,37 @@ export default function ChatPage() {
                 className="overflow-hidden"
               >
                 <div className="flex gap-4 py-3 mb-2">
-                  <button className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-full bg-sage/10 flex items-center justify-center">
-                      <Image className="w-5 h-5 text-sage" />
+                  <motion.button whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-2xl bg-beige-medium flex items-center justify-center text-red-oxide">
+                      <Image className="w-5 h-5" />
                     </div>
                     <span className="text-xs text-taupe">Gallery</span>
-                  </button>
-                  <button className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-full bg-tan/10 flex items-center justify-center">
-                      <Camera className="w-5 h-5 text-tan" />
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-2xl bg-beige-medium flex items-center justify-center text-red-oxide">
+                      <Camera className="w-5 h-5" />
                     </div>
                     <span className="text-xs text-taupe">Camera</span>
-                  </button>
-                  <button className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-full bg-red-oxide/10 flex items-center justify-center">
-                      <Paperclip className="w-5 h-5 text-red-oxide" />
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.9 }} className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-2xl bg-beige-medium flex items-center justify-center text-red-oxide">
+                      <Paperclip className="w-5 h-5" />
                     </div>
                     <span className="text-xs text-taupe">File</span>
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Input Row */}
           <div className="flex items-center gap-2">
-            <button 
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
               onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-              className={`p-2.5 rounded-full transition-colors ${showAttachmentMenu ? 'bg-red-oxide text-white' : 'hover:bg-beige-light text-taupe'}`}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${showAttachmentMenu ? 'bg-red-oxide text-white' : 'bg-beige-medium text-taupe hover:text-white'}`}
             >
               <Paperclip className="w-5 h-5" />
-            </button>
+            </motion.button>
             
             <div className="flex-1 relative">
               <input
@@ -394,29 +386,32 @@ export default function ChatPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
-                className="w-full h-11 px-4 pr-10 rounded-full bg-beige-light border-none focus:outline-none focus:ring-2 focus:ring-red-oxide/20 text-deep-brown text-sm"
+                className="w-full h-12 px-4 pr-12 rounded-xl bg-beige-medium border border-beige-medium text-espresso placeholder:text-taupe focus:outline-none focus:border-red-oxide/50 text-sm"
               />
-              {newMessage.length > 0 && (
-                <button 
-                  onClick={() => setNewMessage('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-taupe/30 flex items-center justify-center"
-                >
-                  <span className="text-white text-xs">×</span>
-                </button>
-              )}
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-beige-medium flex items-center justify-center text-taupe hover:text-espresso"
+              >
+                <Smile className="w-4 h-4" />
+              </motion.button>
             </div>
 
             {newMessage.trim() ? (
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleSendMessage}
-                className="w-11 h-11 rounded-full bg-red-oxide text-white flex items-center justify-center active:scale-95 transition-transform shadow-button"
+                className="w-12 h-12 rounded-xl bg-red-oxide text-white flex items-center justify-center shadow-lg shadow-red-oxide/25"
               >
                 <Send className="w-5 h-5" />
-              </button>
+              </motion.button>
             ) : (
-              <button className="w-11 h-11 rounded-full bg-beige-light text-taupe flex items-center justify-center active:scale-95 transition-transform">
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                className="w-12 h-12 rounded-xl bg-beige-medium text-taupe flex items-center justify-center"
+              >
                 <Mic className="w-5 h-5" />
-              </button>
+              </motion.button>
             )}
           </div>
         </div>

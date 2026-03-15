@@ -2,11 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, MessageCircle, Lock, Send, X, ChevronDown, MapPin, Navigation, ExternalLink, AlertTriangle, Info } from "lucide-react";
+import { Plus, MessageCircle, Lock, Send, X, MapPin, Navigation, ExternalLink, AlertTriangle, Info, Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { CategoryPill } from "@/components/shared/CategoryPill";
-import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useNoticeStore } from "@/lib/stores/noticeStore";
 import { useMapStore } from "@/lib/stores/mapStore";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -22,7 +21,6 @@ interface CommentWithAuthor extends Comment {
   author?: User;
 }
 
-// Bottom Sheet Component
 function BottomSheet({
   isOpen,
   onClose,
@@ -43,19 +41,19 @@ function BottomSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm"
+            className="fixed inset-0 bg-beige-light/80 z-[100] backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col border-t border-beige-medium"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             <div className="flex flex-col items-center pt-3 pb-2">
-              <div className="w-10 h-1.5 bg-warm-sand/50 rounded-full" />
-              <h2 className="font-playfair text-lg font-bold text-espresso mt-3">{title}</h2>
+              <div className="w-10 h-1.5 bg-beige-medium rounded-full" />
+              <h2 className="font-playfair text-xl font-bold text-espresso mt-4">{title}</h2>
             </div>
             <div className="flex-1 overflow-y-auto px-5 pb-6">
               {children}
@@ -82,6 +80,7 @@ export default function NoticeBoardPage() {
   });
   const [newComment, setNewComment] = useState("");
   const [isPrivateComment, setIsPrivateComment] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<number | null>(null);
 
   useEffect(() => {
     loadData();
@@ -154,28 +153,49 @@ export default function NoticeBoardPage() {
     router.push(`/map?flag=${flag.id}&lat=${flag.lat}&lng=${flag.lng}`);
   };
 
-  const postsWithAuthors = posts.map(getPostWithAuthor).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const postsWithAuthors = posts
+    .map(getPostWithAuthor)
+    .filter(post => filterCategory === null || post.category === filterCategory)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
     <AppShell>
       <div className="min-h-full bg-beige-light">
-        {/* Mobile Header */}
-        <header className="mobile-header px-4 py-3">
-          <div className="flex items-center justify-between">
+        {/* Header */}
+        <header className="bg-white/95 backdrop-blur px-6 py-5 sticky top-0 z-10">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="font-playfair text-xl font-bold text-espresso">Notice Board</h1>
-              <p className="text-xs text-taupe">Stay connected with your community</p>
+              <h1 className="font-playfair text-3xl font-bold text-espresso">Notice Board</h1>
+              <p className="text-taupe text-sm">Stay connected with your community</p>
             </div>
             
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsCreateSheetOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-oxide text-white rounded-xl font-medium text-sm active:scale-95 transition-transform shadow-button"
+              className="w-12 h-12 rounded-2xl bg-gradient-to-r from-red-oxide to-rust flex items-center justify-center text-espresso shadow-lg shadow-red-oxide/25"
             >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Post</span>
+              <Plus className="w-6 h-6" />
+            </motion.button>
+          </div>
+
+          {/* Category Filters */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setFilterCategory(null)}
+              className={`chip flex-shrink-0 ${filterCategory === null ? 'chip-active' : 'chip-inactive'}`}
+            >
+              <Filter className="w-4 h-4" />
+              All
             </button>
+            {[1, 2, 3].map((cat) => (
+              <CategoryPill
+                key={cat}
+                category={cat as 1 | 2 | 3}
+                isSelected={filterCategory === cat}
+                onClick={() => setFilterCategory(filterCategory === cat ? null : cat)}
+              />
+            ))}
           </div>
         </header>
 
@@ -198,17 +218,15 @@ export default function NoticeBoardPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
                   onClick={() => setSelectedPost(post)}
-                  className="bg-white rounded-2xl p-4 shadow-card active:scale-[0.99] transition-transform cursor-pointer"
+                  className="bg-white/95 backdrop-blur rounded-2xl p-5 card-press cursor-pointer"
                 >
-                  {/* Post Header */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <UserAvatar 
-                        name={post.author?.name || "Unknown"} 
-                        size="md" 
-                      />
+                      <div className="w-12 h-12 rounded-xl bg-beige-medium flex items-center justify-center text-espresso font-semibold">
+                        {post.author?.name?.[0]?.toUpperCase() || "?"}
+                      </div>
                       <div className="min-w-0">
-                        <h3 className="font-semibold text-deep-brown text-sm truncate">
+                        <h3 className="font-semibold text-espresso text-sm truncate">
                           {post.author?.name || "Unknown"}
                         </h3>
                         <time className="text-xs text-taupe">
@@ -216,23 +234,21 @@ export default function NoticeBoardPage() {
                         </time>
                       </div>
                     </div>
-                    <span 
-                      className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base"
+                    <div 
+                      className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
                       style={{ backgroundColor: getCategoryColor(post.category) }}
                     >
-                      {post.category === 1 ? <AlertTriangle className="w-5 h-5" /> : post.category === 2 ? <Info className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
-                    </span>
+                      {post.category === 1 ? <AlertTriangle className="w-5 h-5 text-espresso" /> : post.category === 2 ? <Info className="w-5 h-5 text-espresso" /> : <MapPin className="w-5 h-5 text-espresso" />}
+                    </div>
                   </div>
 
-                  {/* Post Content */}
-                  <p className="text-deep-brown text-sm leading-relaxed mb-3 line-clamp-3">
+                  <p className="text-deep-brown text-sm leading-relaxed mb-4 line-clamp-3">
                     {post.content}
                   </p>
 
-                  {/* Linked Flag Location - PROMINENT DISPLAY */}
                   {post.flag && (
                     <div 
-                      className="mb-3 p-3 rounded-xl border-2"
+                      className="mb-4 p-4 rounded-xl border"
                       style={{ 
                         backgroundColor: `${getCategoryColor(post.flag.category)}15`,
                         borderColor: `${getCategoryColor(post.flag.category)}40`
@@ -245,41 +261,26 @@ export default function NoticeBoardPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div 
-                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
-                            style={{ backgroundColor: getCategoryColor(post.flag.category) }}
-                          >
-                            <span className="text-lg">
-                              {post.flag.category === 1 ? <AlertTriangle className="w-5 h-5" /> : post.flag.category === 2 ? <Info className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
-                            </span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-deep-brown truncate">
-                              {post.flag.title}
-                            </p>
-                            <p className="text-xs text-taupe truncate">
-                              {post.flag.category === 1 ? "Critical Alert" : post.flag.category === 2 ? "Information" : "General"}
-                            </p>
-                          </div>
-                        </div>
-                        <button
+                        <p className="text-espresso font-medium text-sm truncate">
+                          {post.flag.title}
+                        </p>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleViewOnMap(post.flag!);
                           }}
-                          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-white text-xs font-medium active:scale-95 transition-transform shadow-md"
+                          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-espresso text-xs font-medium"
                           style={{ backgroundColor: getCategoryColor(post.flag.category) }}
                         >
                           <Navigation className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">View</span>
-                        </button>
+                          View
+                        </motion.button>
                       </div>
                     </div>
                   )}
 
-                  {/* Post Footer */}
-                  <div className="flex items-center justify-between pt-3 border-t border-beige-medium">
+                  <div className="flex items-center gap-4 pt-3 border-t border-beige-medium">
                     <div className="flex items-center gap-2 text-sm text-taupe">
                       <MessageCircle className="w-4 h-4" />
                       <span>{getCommentsForPost(post.id).length} comments</span>
@@ -308,7 +309,7 @@ export default function NoticeBoardPage() {
           )}
         </div>
 
-        {/* Create Post Bottom Sheet */}
+        {/* Create Post Sheet */}
         <BottomSheet
           isOpen={isCreateSheetOpen}
           onClose={() => setIsCreateSheetOpen(false)}
@@ -317,15 +318,16 @@ export default function NoticeBoardPage() {
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-deep-brown mb-3">Category</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {[1, 2, 3].map((cat) => (
-                  <button
+                  <motion.button
                     key={cat}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setNewPost({ ...newPost, category: cat as 1 | 2 | 3 })}
-                    className={`py-3 px-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`py-4 px-2 rounded-xl text-sm font-medium transition-all ${
                       newPost.category === cat
-                        ? "text-white shadow-lg"
-                        : "bg-beige-light text-deep-brown active:bg-beige-medium"
+                        ? "text-espresso shadow-lg"
+                        : "bg-beige-medium text-deep-brown border border-beige-medium"
                     }`}
                     style={
                       newPost.category === cat
@@ -333,18 +335,17 @@ export default function NoticeBoardPage() {
                         : undefined
                     }
                   >
-                    <div className="text-lg mb-1">
-                      {cat === 1 ? <AlertTriangle className="w-6 h-6" /> : cat === 2 ? <Info className="w-6 h-6" /> : <MapPin className="w-6 h-6" />}
+                    <div className="text-lg mb-2">
+                      {cat === 1 ? <AlertTriangle className="w-6 h-6 mx-auto" /> : cat === 2 ? <Info className="w-6 h-6 mx-auto" /> : <MapPin className="w-6 h-6 mx-auto" />}
                     </div>
                     <div className="text-xs">
                       {cat === 1 ? "Critical" : cat === 2 ? "Info" : "General"}
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Link to Flag */}
             <div>
               <label className="block text-sm font-medium text-deep-brown mb-2">
                 <span className="flex items-center gap-2">
@@ -358,7 +359,7 @@ export default function NoticeBoardPage() {
               <select
                 value={newPost.flagId}
                 onChange={(e) => setNewPost({ ...newPost, flagId: e.target.value })}
-                className="w-full h-11 px-4 rounded-lg border border-transparent bg-beige-light text-sm text-deep-brown focus:border-red-oxide focus:outline-none focus:ring-2 focus:ring-red-oxide/20"
+                className="w-full h-12 px-4 rounded-xl bg-beige-medium border border-beige-medium text-sm text-espresso focus:border-red-oxide focus:outline-none"
               >
                 <option value="">Select a location...</option>
                 {flags.map((flag) => (
@@ -367,11 +368,6 @@ export default function NoticeBoardPage() {
                   </option>
                 ))}
               </select>
-              {flags.length === 0 && (
-                <p className="text-xs text-taupe mt-1">
-                  No flags available. Create flags on the map first.
-                </p>
-              )}
             </div>
 
             <div>
@@ -380,28 +376,30 @@ export default function NoticeBoardPage() {
                 value={newPost.content}
                 onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                 placeholder="Share with your community..."
-                className="form-input form-textarea"
+                className="input min-h-[120px] resize-none"
                 rows={4}
               />
             </div>
 
             <div className="space-y-3 pt-2">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleCreatePost}
                 disabled={!newPost.content.trim()}
-                className="btn-primary"
+                className="w-full py-4 bg-gradient-to-r from-red-oxide to-rust text-white rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-red-oxide/25"
               >
                 <Plus className="w-5 h-5" />
                 Post
-              </button>
-              <button onClick={() => setIsCreateSheetOpen(false)} className="btn-secondary">
+              </motion.button>
+              <button onClick={() => setIsCreateSheetOpen(false)} className="w-full py-4 bg-beige-medium text-deep-brown rounded-xl font-semibold hover:bg-beige-medium transition-colors">
                 Cancel
               </button>
             </div>
           </div>
         </BottomSheet>
 
-        {/* Post Detail Bottom Sheet */}
+        {/* Post Detail Sheet */}
         <BottomSheet
           isOpen={!!selectedPost}
           onClose={() => setSelectedPost(null)}
@@ -409,29 +407,28 @@ export default function NoticeBoardPage() {
         >
           {selectedPost && (
             <div className="space-y-5">
-              {/* Post Header */}
               <div className="flex items-start gap-3">
-                <UserAvatar name={selectedPost.author?.name || "Unknown"} size="md" />
+                <div className="w-12 h-12 rounded-xl bg-beige-medium flex items-center justify-center text-espresso font-semibold">
+                  {selectedPost.author?.name?.[0]?.toUpperCase() || "?"}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-deep-brown">
+                  <h3 className="font-semibold text-espresso">
                     {selectedPost.author?.name || "Unknown"}
                   </h3>
                   <p className="text-xs text-taupe">{formatDate(selectedPost.createdAt)}</p>
                 </div>
-                <span 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: getCategoryColor(selectedPost.category) }}
                 >
-                  {selectedPost.category === 1 ? <AlertTriangle className="w-6 h-6" /> : selectedPost.category === 2 ? <Info className="w-6 h-6" /> : <MapPin className="w-6 h-6" />}
-                </span>
+                  {selectedPost.category === 1 ? <AlertTriangle className="w-5 h-5 text-espresso" /> : selectedPost.category === 2 ? <Info className="w-5 h-5 text-espresso" /> : <MapPin className="w-5 h-5 text-espresso" />}
+                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-4 bg-beige-light rounded-xl">
+              <div className="p-4 bg-beige-medium rounded-xl border border-beige-medium">
                 <p className="text-deep-brown leading-relaxed">{selectedPost.content}</p>
               </div>
 
-              {/* Linked Flag - Detail View - PROMINENT */}
               {selectedPost.flag && (
                 <div 
                   className="p-4 rounded-2xl border-2"
@@ -449,17 +446,17 @@ export default function NoticeBoardPage() {
                   
                   <div className="flex items-start gap-4 mb-4">
                     <div 
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
                       style={{ backgroundColor: getCategoryColor(selectedPost.flag.category) }}
                     >
-                      {selectedPost.flag.category === 1 ? <AlertTriangle className="w-6 h-6" /> : selectedPost.flag.category === 2 ? <Info className="w-6 h-6" /> : <MapPin className="w-6 h-6" />}
+                      {selectedPost.flag.category === 1 ? <AlertTriangle className="w-6 h-6 text-espresso" /> : selectedPost.flag.category === 2 ? <Info className="w-6 h-6 text-espresso" /> : <MapPin className="w-6 h-6 text-espresso" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-playfair text-lg font-bold text-espresso">
                         {selectedPost.flag.title}
                       </h4>
                       <span
-                        className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white mt-1"
+                        className="inline-block px-3 py-1 rounded-full text-xs font-medium text-espresso mt-1"
                         style={{ backgroundColor: getCategoryColor(selectedPost.flag.category) }}
                       >
                         {getCategoryLabel(selectedPost.flag.category)}
@@ -468,28 +465,29 @@ export default function NoticeBoardPage() {
                   </div>
 
                   {selectedPost.flag.description && (
-                    <div className="p-3 bg-white/60 rounded-xl mb-4">
+                    <div className="p-3 bg-white/50 rounded-xl mb-4">
                       <p className="text-deep-brown text-sm leading-relaxed">
                         {selectedPost.flag.description}
                       </p>
                     </div>
                   )}
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleViewOnMap(selectedPost.flag!)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white font-medium active:scale-95 transition-transform shadow-lg"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white font-medium shadow-lg"
                     style={{ backgroundColor: getCategoryColor(selectedPost.flag.category) }}
                   >
                     <Navigation className="w-5 h-5" />
                     View on Map
                     <ExternalLink className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </div>
               )}
 
-              {/* Comments Section */}
               <div className="border-t border-beige-medium pt-4">
-                <h4 className="font-semibold text-deep-brown mb-4 flex items-center gap-2">
+                <h4 className="font-semibold text-espresso mb-4 flex items-center gap-2">
                   <MessageCircle className="w-4 h-4" />
                   Comments ({getCommentsForPost(selectedPost.id).length})
                 </h4>
@@ -498,7 +496,7 @@ export default function NoticeBoardPage() {
                   {getCommentsForPost(selectedPost.id).map((comment) => (
                     <div key={comment.id} className="pl-3 border-l-2 border-beige-medium">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm text-deep-brown">
+                        <span className="font-medium text-sm text-espresso">
                           {comment.author?.name || "Unknown"}
                         </span>
                         {comment.isPrivate && (
@@ -514,7 +512,6 @@ export default function NoticeBoardPage() {
                   ))}
                 </div>
 
-                {/* Add Comment */}
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -522,15 +519,16 @@ export default function NoticeBoardPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-                    className="form-input flex-1"
+                    className="input flex-1"
                   />
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleAddComment}
                     disabled={!newComment.trim()}
-                    className="w-12 h-12 bg-red-oxide text-white rounded-xl flex items-center justify-center disabled:opacity-50 active:scale-95 transition-transform"
+                    className="w-12 h-12 bg-gradient-to-r from-red-oxide to-rust text-white rounded-xl flex items-center justify-center disabled:opacity-50"
                   >
                     <Send className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 </div>
                 
                 <label className="flex items-center gap-2 mt-3 text-sm text-taupe cursor-pointer">
@@ -538,7 +536,7 @@ export default function NoticeBoardPage() {
                     type="checkbox"
                     checked={isPrivateComment}
                     onChange={(e) => setIsPrivateComment(e.target.checked)}
-                    className="w-4 h-4 rounded border-warm-sand text-red-oxide focus:ring-red-oxide"
+                    className="w-4 h-4 rounded border-beige-medium bg-beige-medium text-red-oxide focus:ring-red-oxide"
                   />
                   <Lock className="w-3 h-3" />
                   Private comment

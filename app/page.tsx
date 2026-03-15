@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Map, MessageSquare, Users, Shield } from "lucide-react";
+import { Map, MessageSquare, Users, Shield, ArrowRight, Home } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 const features = [
@@ -25,75 +25,86 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-beige-light overflow-hidden">
-      <section className="relative min-h-screen flex flex-col">
-        <div className="absolute inset-0 opacity-30 pointer-events-none">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-red-oxide/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 right-10 w-96 h-96 bg-tan/20 rounded-full blur-3xl" />
-        </div>
-
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center max-w-md mx-auto"
+      <section className="min-h-screen flex flex-col">
+        {/* Navigation */}
+        <motion.nav
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="px-6 py-6 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-oxide flex items-center justify-center">
+              <Home className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-playfair text-xl font-bold text-espresso">Commune</span>
+          </div>
+          
+          <button 
+            onClick={() => router.push("/login")}
+            className="text-taupe hover:text-deep-brown transition-colors text-sm font-medium"
           >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="mb-8"
-            >
-              <div className="w-20 h-20 mx-auto rounded-2xl bg-red-oxide flex items-center justify-center shadow-lg">
-                <span className="text-white font-playfair font-bold text-4xl">C</span>
-              </div>
-            </motion.div>
+            Sign In
+          </button>
+        </motion.nav>
 
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center max-w-lg mx-auto"
+          >
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="font-playfair text-4xl font-bold text-espresso mb-4 leading-tight"
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="font-playfair text-5xl md:text-6xl font-bold text-espresso mb-6 leading-tight"
             >
               Connect with Your{" "}
               <span className="text-red-oxide">Community</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-base text-taupe mb-10"
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-lg text-taupe mb-10 max-w-md mx-auto"
             >
               A sophisticated platform for neighborhood communication where privacy meets community engagement.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="space-y-3"
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <button
+              <motion.button
+                whileTap={{ scale: 0.98 }}
                 onClick={() => router.push("/login")}
-                className="w-full py-4 bg-red-oxide text-white rounded-2xl font-semibold text-base shadow-button active:scale-[0.98] transition-transform"
+                className="px-8 py-4 bg-red-oxide text-white rounded-2xl font-semibold text-base shadow-button flex items-center justify-center gap-2"
               >
                 Get Started
-              </button>
-              <button
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+              
+              <motion.button
+                whileTap={{ scale: 0.98 }}
                 onClick={() => router.push("/login")}
-                className="w-full py-4 bg-transparent border-2 border-red-oxide text-red-oxide rounded-2xl font-semibold text-base active:bg-red-oxide/5 transition-colors"
+                className="px-8 py-4 bg-white text-deep-brown rounded-2xl font-semibold text-base border border-beige-medium hover:bg-beige-medium transition-colors"
               >
-                Sign In
-              </button>
+                Learn More
+              </motion.button>
             </motion.div>
           </motion.div>
 
+          {/* Features Grid */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="mt-12 grid grid-cols-2 gap-4 w-full max-w-sm"
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl"
           >
             {features.map((feature, index) => {
               const Icon = feature.icon;
@@ -102,13 +113,14 @@ export default function LandingPage() {
                   key={feature.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1, duration: 0.4 }}
-                  className="bg-white/50 backdrop-blur rounded-2xl p-4 text-center"
+                  transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white rounded-2xl p-5 text-center border border-beige-medium"
                 >
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-beige-medium flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-red-oxide" />
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-red-oxide/10 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-red-oxide" />
                   </div>
-                  <h3 className="font-semibold text-deep-brown text-sm mb-1">
+                  <h3 className="font-semibold text-espresso text-sm mb-1">
                     {feature.title}
                   </h3>
                   <p className="text-xs text-taupe">
@@ -120,6 +132,7 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
+        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -22,18 +22,21 @@ export function CategoryPill({
   const Icon = category === 1 ? AlertTriangle : category === 2 ? Info : MapPin;
 
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.95 }}
       onClick={onClick}
       className={cn(
-        "flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 active:scale-95",
+        "flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
         isSelected
           ? "text-white shadow-md"
-          : "bg-beige-medium text-deep-brown active:bg-warm-sand/50"
+          : "bg-navy-800 text-navy-300 border border-white/5 hover:bg-navy-700"
       )}
       style={isSelected ? { backgroundColor: color } : undefined}
     >
       <Icon className="w-4 h-4" />
       {showLabel && <span>{label}</span>}
-    </button>
+    </motion.button>
   );
 }
+
+import { motion } from "framer-motion";

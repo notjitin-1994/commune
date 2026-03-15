@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Phone, Shield, Check, Loader2 } from "lucide-react";
-import { useAuthStore, UserDetails } from "@/lib/stores/authStore";
+import { 
+  ArrowLeft, 
+  Phone, 
+  Shield, 
+  Check, 
+  Loader2, 
+  ChevronRight,
+  Lock,
+  Home
+} from "lucide-react";
+import { useAuthStore } from "@/lib/stores/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -101,14 +110,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-beige-light flex flex-col">
       {/* Header */}
-      <div className="px-4 py-4 flex items-center">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="px-6 py-6"
+      >
         <button
           onClick={() => step === "phone" ? router.push("/") : setStep(step === "otp" ? "phone" : "otp")}
-          className="p-2 -ml-2 rounded-xl active:bg-beige-medium transition-colors"
+          className="flex items-center gap-2 text-taupe hover:text-deep-brown transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-taupe" />
+          <div className="w-10 h-10 rounded-xl bg-white border border-beige-medium flex items-center justify-center">
+            <ArrowLeft className="w-5 h-5" />
+          </div>
         </button>
-      </div>
+      </motion.div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col justify-center px-6 pb-8">
@@ -116,56 +131,83 @@ export default function LoginPage() {
           {step === "phone" && (
             <motion.div
               key="phone"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-sm mx-auto w-full"
             >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-oxide/10 flex items-center justify-center">
-                  <Phone className="w-8 h-8 text-red-oxide" />
-                </div>
-                <h1 className="font-playfair text-2xl font-bold text-espresso mb-2">
-                  Enter Your Phone
-                </h1>
-                <p className="text-taupe text-sm">
-                  We'll send you a verification code
-                </p>
+              <div className="text-center mb-10">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-red-oxide flex items-center justify-center shadow-lg"
+                >
+                  <Phone className="w-10 h-10 text-white" />
+                </motion.div>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="font-playfair text-4xl font-bold text-espresso mb-3"
+                >
+                  Welcome Back
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-taupe"
+                >
+                  Enter your phone number to continue
+                </motion.p>
               </div>
 
-              <div className="space-y-4">
-                <div>
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
                   <label className="block text-sm font-medium text-deep-brown mb-2">
                     Phone Number
                   </label>
                   <input
                     type="tel"
                     inputMode="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="form-input text-center text-lg tracking-wide"
+                    className="form-input text-center text-lg tracking-wider"
                     autoFocus
                   />
-                </div>
+                </motion.div>
 
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-oxide text-sm text-center"
-                  >
-                    {error}
-                  </motion.p>
-                )}
+                <AnimatePresence>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-red-oxide text-sm text-center"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
 
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handlePhoneSubmit}
-                  className="btn-primary mt-6"
+                  className="btn-primary"
                 >
                   Continue
-                </button>
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
               </div>
             </motion.div>
           )}
@@ -173,69 +215,110 @@ export default function LoginPage() {
           {step === "otp" && (
             <motion.div
               key="otp"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-sm mx-auto w-full"
             >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-oxide/10 flex items-center justify-center">
-                  <Shield className="w-8 h-8 text-red-oxide" />
-                </div>
-                <h1 className="font-playfair text-2xl font-bold text-espresso mb-2">
-                  Enter OTP
-                </h1>
-                <p className="text-taupe text-sm">
-                  Code sent to {phone}
-                </p>
+              <div className="text-center mb-10">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-beige-medium flex items-center justify-center"
+                >
+                  <Shield className="w-10 h-10 text-red-oxide" />
+                </motion.div>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="font-playfair text-3xl font-bold text-espresso mb-3"
+                >
+                  Verification Code
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-taupe"
+                >
+                  Enter the 6-digit code sent to {phone}
+                </motion.p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex justify-center gap-2">
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex justify-center gap-3"
+                >
                   {otp.map((digit, index) => (
-                    <input
+                    <motion.div
                       key={index}
-                      id={`otp-${index}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-14 text-center text-2xl font-mono font-medium rounded-xl border-2 border-beige-medium bg-white text-deep-brown focus:border-red-oxide focus:outline-none transition-colors"
-                    />
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + index * 0.05 }}
+                    >
+                      <input
+                        id={`otp-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        className="w-12 h-14 text-center text-2xl font-bold rounded-xl bg-white border-2 border-beige-medium text-espresso focus:border-red-oxide focus:outline-none transition-colors"
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
 
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-oxide text-sm text-center"
-                  >
-                    {error}
-                  </motion.p>
-                )}
+                <AnimatePresence>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-red-oxide text-sm text-center"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
 
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleOtpSubmit}
                   disabled={isLoading}
-                  className="btn-primary mt-6"
+                  className="btn-primary"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Verify"
+                    <>
+                      Verify
+                      <ChevronRight className="w-5 h-5" />
+                    </>
                   )}
-                </button>
+                </motion.button>
 
-                <p className="text-center text-sm text-taupe">
-                  Didn't receive code?{" "}
-                  <button className="text-red-oxide font-medium">
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="text-center text-sm text-taupe"
+                >
+                  Didn&apos;t receive code?{" "}
+                  <button className="text-red-oxide hover:text-rust font-medium">
                     Resend
                   </button>
-                </p>
+                </motion.p>
               </div>
             </motion.div>
           )}
@@ -243,26 +326,45 @@ export default function LoginPage() {
           {step === "name" && (
             <motion.div
               key="name"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-sm mx-auto w-full"
             >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-oxide/10 flex items-center justify-center">
-                  <Check className="w-8 h-8 text-red-oxide" />
-                </div>
-                <h1 className="font-playfair text-2xl font-bold text-espresso mb-2">
-                  Welcome!
-                </h1>
-                <p className="text-taupe text-sm">
+              <div className="text-center mb-10">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-sage flex items-center justify-center shadow-lg"
+                >
+                  <Home className="w-10 h-10 text-white" />
+                </motion.div>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="font-playfair text-3xl font-bold text-espresso mb-3"
+                >
+                  Almost There!
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-taupe"
+                >
                   What should we call you?
-                </p>
+                </motion.p>
               </div>
 
-              <div className="space-y-4">
-                <div>
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
                   <label className="block text-sm font-medium text-deep-brown mb-2">
                     Your Name
                   </label>
@@ -274,29 +376,39 @@ export default function LoginPage() {
                     className="form-input text-center"
                     autoFocus
                   />
-                </div>
+                </motion.div>
 
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-oxide text-sm text-center"
-                  >
-                    {error}
-                  </motion.p>
-                )}
+                <AnimatePresence>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-red-oxide text-sm text-center"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
 
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleNameSubmit}
                   disabled={isLoading}
-                  className="btn-primary mt-6"
+                  className="btn-primary"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Get Started"
+                    <>
+                      Get Started
+                      <ChevronRight className="w-5 h-5" />
+                    </>
                   )}
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           )}
@@ -304,11 +416,17 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 text-center">
-        <p className="text-xs text-taupe">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="px-6 py-6 text-center"
+      >
+        <div className="flex items-center justify-center gap-2 text-taupe text-xs">
+          <Lock className="w-3 h-3" />
+          <span>Secured with end-to-end encryption</span>
+        </div>
+      </motion.div>
     </div>
   );
 }

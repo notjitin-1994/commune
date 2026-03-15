@@ -3,12 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, LogOut, Shield, RefreshCw, Database } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { UserProfile, UserProfileCompact, UserProfileSkeleton } from "@/components/shared/UserProfile";
+import { ArrowLeft, LogOut, Shield, RefreshCw, Database, ChevronRight, Edit3, Camera } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { forceReseed } from "@/lib/data/seed";
-import { cn } from "@/lib/utils/helpers";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -22,14 +19,12 @@ export default function ProfilePage() {
     callLogs: 0,
   });
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Load data stats
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDataStats({
@@ -58,7 +53,15 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-beige-light py-8 px-4">
         <div className="max-w-2xl mx-auto">
-          <UserProfileSkeleton />
+          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 animate-pulse">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-beige-medium" />
+              <div className="flex-1 space-y-2">
+                <div className="h-6 bg-beige-medium rounded w-1/2" />
+                <div className="h-4 bg-beige-medium rounded w-1/3" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -66,125 +69,159 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-beige-light">
-      {/* Header */}
-      <header className="bg-white shadow-card sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button
+      <header className="bg-white/95 backdrop-blur sticky top-0 z-10 px-6 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={() => router.push("/map")}
-            className="p-2 -ml-2 rounded-full hover:bg-beige-medium transition-colors"
+            className="w-10 h-10 rounded-xl bg-beige-medium flex items-center justify-center text-deep-brown"
           >
-            <ArrowLeft className="w-5 h-5 text-taupe" />
-          </button>
-          <h1 className="font-playfair text-xl font-bold text-espresso">Profile</h1>
-          <div className="w-9" /> {/* Spacer for alignment */}
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
+          <h1 className="font-playfair text-xl font-bold text-white">Profile</h1>
+          <div className="w-10" />
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="py-8 px-4">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Profile Card */}
-          <UserProfile user={user} editable />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-white/95 backdrop-blur rounded-3xl p-8 text-center relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-red-oxide/5" />
+            
+            <div className="relative">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 rounded-2xl bg-red-oxide flex items-center justify-center text-3xl font-bold text-white shadow-xl">
+                  {user.name?.charAt(0).toUpperCase() || "?"}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-beige-medium border border-beige-medium flex items-center justify-center text-deep-brown"
+                >
+                  <Camera className="w-5 h-5" />
+                </motion.button>
+              </div>
+              
+              <h2 className="font-playfair text-2xl font-bold text-white mt-4">{user.name}</h2>
+              <p className="text-taupe flex items-center justify-center gap-2 mt-2">
+                <Shield className="w-4 h-4" />
+                {user.isAdmin ? "Community Admin" : "Community Member"}
+              </p>
+              
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">12</p>
+                  <p className="text-xs text-taupe">Posts</p>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">48</p>
+                  <p className="text-xs text-taupe">Comments</p>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">5</p>
+                  <p className="text-xs text-taupe">Rooms</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-          {/* Account Settings */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white rounded-2xl shadow-card overflow-hidden"
+            className="bg-white/95 backdrop-blur rounded-2xl overflow-hidden"
           >
             <div className="p-6">
-              <h3 className="font-playfair text-lg font-bold text-espresso mb-4">
+              <h3 className="font-playfair text-lg font-bold text-white mb-4">
                 Account Settings
               </h3>
               
-              <div className="space-y-3">
-                {/* Privacy Option */}
-                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-beige-light transition-colors text-left">
+              <div className="space-y-2">
+                <motion.button 
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-beige-medium/50 hover:bg-beige-medium transition-colors text-left"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-beige-light flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-taupe" />
+                    <div className="w-10 h-10 rounded-lg bg-beige-medium flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-red-oxide" />
                     </div>
                     <div>
-                      <p className="font-medium text-deep-brown">Privacy</p>
+                      <p className="font-medium text-white">Privacy</p>
                       <p className="text-xs text-taupe">Manage your privacy settings</p>
                     </div>
                   </div>
-                  <ArrowLeft className="w-4 h-4 text-taupe rotate-180" />
-                </button>
+                  <ChevronRight className="w-5 h-5 text-taupe" />
+                </motion.button>
 
-                {/* Logout */}
-                <button
+                <motion.button 
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-oxide/5 transition-colors text-left group"
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-error/10 hover:bg-error/20 transition-colors text-left group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-red-oxide/10 flex items-center justify-center group-hover:bg-red-oxide/20 transition-colors">
-                    <LogOut className="w-5 h-5 text-red-oxide" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-error/20 flex items-center justify-center">
+                      <LogOut className="w-5 h-5 text-error" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-error">Logout</p>
+                      <p className="text-xs text-taupe">Sign out of your account</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-red-oxide">Logout</p>
-                    <p className="text-xs text-taupe">Sign out of your account</p>
-                  </div>
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>
 
-          {/* Demo Data Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white rounded-2xl shadow-card overflow-hidden"
+            className="bg-white/95 backdrop-blur rounded-2xl overflow-hidden"
           >
             <div className="p-6">
-              <h3 className="font-playfair text-lg font-bold text-espresso mb-4">
+              <h3 className="font-playfair text-lg font-bold text-white mb-4">
                 Demo Data Status
               </h3>
               
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.users}</p>
-                  <p className="text-xs text-taupe">Users</p>
-                </div>
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.flags}</p>
-                  <p className="text-xs text-taupe">Flags</p>
-                </div>
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.posts}</p>
-                  <p className="text-xs text-taupe">Posts</p>
-                </div>
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.conversations}</p>
-                  <p className="text-xs text-taupe">Chats</p>
-                </div>
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.messages}</p>
-                  <p className="text-xs text-taupe">Messages</p>
-                </div>
-                <div className="text-center p-3 bg-beige-light rounded-xl">
-                  <p className="text-2xl font-bold text-red-oxide">{dataStats.callLogs}</p>
-                  <p className="text-xs text-taupe">Calls</p>
-                </div>
+                {[
+                  { label: 'Users', value: dataStats.users },
+                  { label: 'Flags', value: dataStats.flags },
+                  { label: 'Posts', value: dataStats.posts },
+                  { label: 'Chats', value: dataStats.conversations },
+                  { label: 'Messages', value: dataStats.messages },
+                  { label: 'Calls', value: dataStats.callLogs },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center p-3 bg-beige-medium/50 rounded-xl">
+                    <p className="text-2xl font-bold text-red-oxide">{stat.value}</p>
+                    <p className="text-xs text-taupe">{stat.label}</p>
+                  </div>
+                ))}
               </div>
 
-              <button
+              <motion.button
+                whileTap={{ scale: 0.98 }}
                 onClick={handleResetData}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-deep-brown/5 hover:bg-deep-brown/10 active:bg-deep-brown/20 transition-colors text-deep-brown font-medium"
+                className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-beige-medium/50 hover:bg-beige-medium transition-colors text-deep-brown font-medium"
               >
                 <RefreshCw className="w-4 h-4" />
                 Reset Demo Data
-              </button>
+              </motion.button>
             </div>
           </motion.div>
 
-          {/* Data Storage Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-beige-medium/50 rounded-2xl p-6"
+            className="bg-white/95 backdrop-blur rounded-2xl p-6"
           >
             <h4 className="text-sm font-medium text-taupe mb-2">Data Storage</h4>
             <p className="text-xs text-taupe leading-relaxed">

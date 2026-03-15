@@ -3,28 +3,36 @@
 import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, AlertTriangle, MapPin, X, Info, Navigation, ChevronDown, Crosshair, ArrowLeft, TriangleAlert, Plus } from "lucide-react";
+import { 
+  Search, 
+  AlertTriangle, 
+  MapPin, 
+  X, 
+  Info, 
+  Navigation, 
+  Crosshair, 
+  Plus,
+  ChevronDown,
+  Layers
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { AppShell } from "@/components/layout/AppShell";
 import { CategoryPill } from "@/components/shared/CategoryPill";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useMapStore } from "@/lib/stores/mapStore";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { Flag } from "@/lib/types";
 import { getCategoryColor, getCategoryLabel, formatDate } from "@/lib/utils/helpers";
 
-// Dynamically import the map component to avoid SSR issues
+// Dynamically import the map component
 const MapComponent = dynamic(
   () => import("./MapComponent").then((mod) => mod.MapComponent),
   {
     ssr: false,
     loading: () => (
-      <div className="absolute inset-0 flex items-center justify-center bg-beige-medium">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-red-oxide border-t-transparent rounded-full animate-spin" />
-          <p className="text-taupe text-sm">Loading map...</p>
+      <div className="absolute inset-0 flex items-center justify-center bg-beige-light">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-3 border-red-oxide border-t-transparent rounded-full animate-spin" />
+          <p className="text-deep-brown">Loading map...</p>
         </div>
       </div>
     ),
@@ -47,29 +55,25 @@ function BottomSheet({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm"
+            className="fixed inset-0 bg-beige-light/80 z-[100] backdrop-blur-sm"
           />
-          {/* Sheet */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col border-t border-beige-medium"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            {/* Handle */}
             <div className="flex flex-col items-center pt-3 pb-2">
-              <div className="w-10 h-1.5 bg-warm-sand/50 rounded-full" />
-              <h2 className="font-playfair text-lg font-bold text-espresso mt-3">{title}</h2>
+              <div className="w-10 h-1.5 bg-beige-medium rounded-full" />
+              <h2 className="font-playfair text-xl font-bold text-espresso mt-4">{title}</h2>
             </div>
-            {/* Content */}
             <div className="flex-1 overflow-y-auto px-5 pb-6">
               {children}
             </div>
@@ -80,7 +84,7 @@ function BottomSheet({
   );
 }
 
-// Inner component that uses useSearchParams
+// Inner component
 function MapPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -92,6 +96,7 @@ function MapPageContent() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationDenied, setLocationDenied] = useState(false);
   const [newFlagPosition, setNewFlagPosition] = useState({ lat: 0, lng: 0 });
   const [newFlagData, setNewFlagData] = useState({
     title: "",
@@ -104,7 +109,6 @@ function MapPageContent() {
   const [showSearch, setShowSearch] = useState(false);
   const [targetFlag, setTargetFlag] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Handle URL params for navigation from notice board
   useEffect(() => {
     const flagId = searchParams.get('flag');
     const lat = searchParams.get('lat');
@@ -122,7 +126,11 @@ function MapPageContent() {
 
   useEffect(() => {
     loadFlags();
-    handleGetLocation();
+    // Request location after a short delay to ensure user interaction context
+    const timer = setTimeout(() => {
+      handleGetLocation();
+    }, 500);
+    return () => clearTimeout(timer);
   }, [loadFlags]);
 
   const handleGetLocation = useCallback(() => {
@@ -148,6 +156,7 @@ function MapPageContent() {
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "Location access denied";
+            setLocationDenied(true);
             break;
           case error.POSITION_UNAVAILABLE:
             errorMessage = "Location unavailable";
@@ -223,6 +232,10 @@ function MapPageContent() {
       setNewFlagPosition(userLocation);
       setNewFlagData({ title: "", description: "", category: 1 });
       setIsAddSheetOpen(true);
+    } else {
+      // Prompt user to enable location or tap map
+      setLocationError("Enable location access or tap on the map to add a flag");
+      setTimeout(() => setLocationError(null), 3000);
     }
   };
 
@@ -230,9 +243,9 @@ function MapPageContent() {
 
   return (
     <AppShell>
-      <div className="fixed inset-x-0 top-0 lg:static lg:h-screen flex flex-col bg-beige-light" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
-        {/* Mobile Header - Compact */}
-        <header className="mobile-header px-4 py-3">
+      <div className="h-[100dvh] lg:h-screen flex flex-col bg-beige-light fixed inset-0 lg:relative">
+        {/* Header */}
+        <header className="bg-white/95 backdrop-blur px-4 py-3 sticky top-0 z-20 flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h1 className="font-playfair text-xl font-bold text-espresso truncate">Community Map</h1>
@@ -246,16 +259,29 @@ function MapPageContent() {
               )}
             </div>
             
-            {/* Search Toggle */}
-            <button
-              onClick={() => setShowSearch(!showSearch)}
-              className="p-2.5 rounded-xl bg-beige-medium active:bg-warm-sand/30 transition-colors"
-            >
-              <Search className="w-5 h-5 text-deep-brown" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className="w-11 h-11 rounded-xl bg-beige-medium border border-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso hover:bg-warm-sand transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={handleGetLocation}
+                disabled={isLocating}
+                className="w-11 h-11 rounded-xl bg-beige-medium border border-beige-medium flex items-center justify-center text-deep-brown hover:text-espresso hover:bg-warm-sand transition-colors disabled:opacity-50"
+              >
+                {isLocating ? (
+                  <div className="w-5 h-5 border-2 border-red-oxide border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Crosshair className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Search Bar - Expandable */}
+          {/* Search Bar */}
           <AnimatePresence>
             {showSearch && (
               <motion.div
@@ -266,40 +292,39 @@ function MapPageContent() {
               >
                 <div className="pt-3 relative">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
-                    <Input
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
+                    <input
                       type="text"
                       placeholder="Search places..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                      className="pl-10 pr-10 h-11"
+                      className="input pl-11 pr-10"
                       autoFocus
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-beige-medium flex items-center justify-center"
                       >
-                        <X className="w-4 h-4 text-taupe" />
+                        <X className="w-3 h-3 text-taupe" />
                       </button>
                     )}
                   </div>
                   
-                  {/* Search Results */}
                   <AnimatePresence>
                     {searchResults.length > 0 && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-beige-medium overflow-hidden z-50"
+                        className="absolute top-full left-0 right-0 mt-2 bg-beige-medium rounded-xl shadow-xl border border-beige-medium overflow-hidden z-50"
                       >
                         {searchResults.map((result, index) => (
                           <button
                             key={index}
                             onClick={() => handleSelectSearchResult(result)}
-                            className="w-full text-left px-4 py-3 hover:bg-beige-light transition-colors border-b border-beige-medium last:border-0 active:bg-beige-medium"
+                            className="w-full text-left px-4 py-3 hover:bg-beige-medium transition-colors border-b border-beige-medium last:border-0"
                           >
                             <p className="text-sm text-deep-brown truncate">{result.display_name}</p>
                           </button>
@@ -312,12 +337,13 @@ function MapPageContent() {
             )}
           </AnimatePresence>
 
-          {/* Category Filters - Horizontal Scroll */}
-          <div className="category-bar mt-3">
+          {/* Category Filters */}
+          <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
             <button
               onClick={() => setFilter(null)}
-              className={`chip ${filterCategory === null ? "chip-active" : "chip-inactive"}`}
+              className={`chip flex-shrink-0 ${filterCategory === null ? "chip-active" : "chip-inactive"}`}
             >
+              <Layers className="w-4 h-4" />
               All
             </button>
             {[1, 2, 3].map((cat) => (
@@ -331,23 +357,80 @@ function MapPageContent() {
           </div>
 
           {/* Location Error */}
-          {locationError && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mt-3 p-3 bg-red-oxide/10 rounded-xl flex items-center gap-2 text-sm text-red-oxide"
-            >
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              <span className="flex-1">{locationError}</span>
-              <button onClick={handleGetLocation} className="underline font-medium">
-                Retry
-              </button>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {locationError && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 p-3 bg-red-oxide/10 rounded-xl border border-red-oxide/20"
+              >
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 text-red-oxide mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-deep-brown">{locationError}</p>
+                    <p className="text-xs text-taupe mt-1">
+                      {locationError === "Location access denied" 
+                        ? "Please enable location in your browser settings and try again."
+                        : "You can still use the map by searching for a location."}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={handleGetLocation} 
+                    className="text-xs font-medium text-red-oxide underline whitespace-nowrap"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </header>
 
         {/* Map */}
         <div className="flex-1 relative overflow-hidden">
+          {/* Location Permission Required */}
+          {!userLocation && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 z-30 bg-beige-light flex items-center justify-center p-6"
+            >
+              <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-xl border border-beige-medium text-center">
+                <div className="w-20 h-20 bg-red-oxide/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <Navigation className="w-10 h-10 text-red-oxide" />
+                </div>
+                <h2 className="font-playfair text-2xl font-bold text-espresso mb-3">
+                  Location Required
+                </h2>
+                <p className="text-taupe text-sm mb-6 leading-relaxed">
+                  Commune requires location access to show community flags near you. Please allow location access to continue.
+                </p>
+                <button
+                  onClick={handleGetLocation}
+                  disabled={isLocating}
+                  className="w-full py-4 bg-red-oxide text-white rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-red-oxide/25"
+                >
+                  {isLocating ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Getting location...
+                    </>
+                  ) : (
+                    <>
+                      <Navigation className="w-5 h-5" />
+                      Allow Location Access
+                    </>
+                  )}
+                </button>
+                {locationError && (
+                  <p className="text-xs text-red-oxide mt-4">
+                    {locationError}. Please enable location in your browser settings.
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
           <MapComponent
             flags={filteredFlags}
             onFlagClick={handleFlagClick}
@@ -358,33 +441,19 @@ function MapPageContent() {
           />
         </div>
 
-        {/* Floating Action Buttons - Fixed position relative to viewport */}
-        {userLocation && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={handleAddCurrentLocation}
-            className="fixed left-4 z-40 flex items-center gap-2 px-5 py-3 bg-red-oxide text-white rounded-full font-medium text-sm shadow-lg active:scale-95 transition-transform"
-            style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add here</span>
-          </motion.button>
-        )}
-
-        <button
-          onClick={handleGetLocation}
-          disabled={isLocating}
-          className="fixed right-4 z-40 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-70"
-          style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
-          aria-label="Get my location"
+        {/* Floating Action Buttons */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleAddCurrentLocation}
+          className="fixed left-4 z-40 flex items-center gap-2 px-5 py-3 bg-red-oxide text-white rounded-full font-medium text-sm shadow-xl shadow-red-oxide/30"
+          style={{ bottom: 'calc(96px + env(safe-area-inset-bottom))' }}
         >
-          {isLocating ? (
-            <div className="w-5 h-5 border-2 border-red-oxide border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Crosshair className="w-5 h-5 text-deep-brown" />
-          )}
-        </button>
+          <Plus className="w-5 h-5" />
+          <span>Add Flag</span>
+        </motion.button>
 
         {/* Add Flag Bottom Sheet */}
         <BottomSheet
@@ -393,29 +462,28 @@ function MapPageContent() {
           title="Add New Flag"
         >
           <div className="space-y-5">
-            {/* Location Display */}
-            <div className="p-4 bg-beige-light rounded-xl">
+            <div className="p-4 bg-beige-medium rounded-xl border border-beige-medium">
               <div className="flex items-center gap-2 text-taupe text-sm mb-1">
                 <MapPin className="w-4 h-4" />
                 <span>Location</span>
               </div>
-              <p className="text-deep-brown font-medium text-sm">
+              <p className="text-deep-brown font-medium font-mono text-sm">
                 {newFlagPosition.lat.toFixed(6)}, {newFlagPosition.lng.toFixed(6)}
               </p>
             </div>
 
-            {/* Category Selection */}
             <div>
               <label className="block text-sm font-medium text-deep-brown mb-3">Category</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {[1, 2, 3].map((cat) => (
-                  <button
+                  <motion.button
                     key={cat}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setNewFlagData({ ...newFlagData, category: cat as 1 | 2 | 3 })}
-                    className={`py-3 px-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`py-4 px-2 rounded-xl text-sm font-medium transition-all ${
                       newFlagData.category === cat
                         ? "text-white shadow-lg"
-                        : "bg-beige-light text-deep-brown active:bg-beige-medium"
+                        : "bg-beige-medium text-deep-brown border border-beige-medium hover:bg-beige-medium"
                     }`}
                     style={
                       newFlagData.category === cat
@@ -423,18 +491,17 @@ function MapPageContent() {
                         : undefined
                     }
                   >
-                    <div className="text-lg mb-1">
-                      {cat === 1 ? <AlertTriangle className="w-6 h-6" /> : cat === 2 ? <Info className="w-6 h-6" /> : <MapPin className="w-6 h-6" />}
+                    <div className="text-lg mb-2">
+                      {cat === 1 ? <AlertTriangle className="w-6 h-6 mx-auto" /> : cat === 2 ? <Info className="w-6 h-6 mx-auto" /> : <MapPin className="w-6 h-6 mx-auto" />}
                     </div>
                     <div className="text-xs">
                       {getCategoryLabel(cat as 1 | 2 | 3)}
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Title Input */}
             <div>
               <label className="block text-sm font-medium text-deep-brown mb-2">Title</label>
               <input
@@ -442,33 +509,33 @@ function MapPageContent() {
                 value={newFlagData.title}
                 onChange={(e) => setNewFlagData({ ...newFlagData, title: e.target.value })}
                 placeholder="What's happening here?"
-                className="form-input"
+                className="input"
               />
             </div>
 
-            {/* Description Input */}
             <div>
               <label className="block text-sm font-medium text-deep-brown mb-2">Description</label>
               <textarea
                 value={newFlagData.description}
                 onChange={(e) => setNewFlagData({ ...newFlagData, description: e.target.value })}
                 placeholder="Add more details..."
-                className="form-input form-textarea"
+                className="input min-h-[100px] resize-none"
                 rows={3}
               />
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-3 pt-2">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleAddFlag}
                 disabled={!newFlagData.title.trim()}
-                className="btn-primary"
+                className="w-full py-4 bg-red-oxide text-white rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-oxide/25"
               >
                 <MapPin className="w-5 h-5" />
                 Add Flag
-              </button>
-              <button onClick={() => setIsAddSheetOpen(false)} className="btn-secondary">
+              </motion.button>
+              <button onClick={() => setIsAddSheetOpen(false)} className="w-full py-4 bg-beige-medium text-deep-brown rounded-xl font-semibold hover:bg-beige-medium transition-colors">
                 Cancel
               </button>
             </div>
@@ -483,18 +550,17 @@ function MapPageContent() {
         >
           {selectedFlag && (
             <div className="space-y-5">
-              {/* Flag Header */}
               <div className="flex items-start gap-4">
                 <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
                   style={{ backgroundColor: getCategoryColor(selectedFlag.category) }}
                 >
-                  {selectedFlag.category === 1 && <AlertTriangle className="w-6 h-6" />}
-                  {selectedFlag.category === 2 && <Info className="w-6 h-6" />}
-                  {selectedFlag.category === 3 && <MapPin className="w-6 h-6" />}
+                  {selectedFlag.category === 1 && <AlertTriangle className="w-8 h-8 text-white" />}
+                  {selectedFlag.category === 2 && <Info className="w-8 h-8 text-white" />}
+                  {selectedFlag.category === 3 && <MapPin className="w-8 h-8 text-white" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-playfair text-xl font-bold text-espresso">
+                  <h3 className="font-playfair text-2xl font-bold text-espresso">
                     {selectedFlag.title}
                   </h3>
                   <span
@@ -506,36 +572,34 @@ function MapPageContent() {
                 </div>
               </div>
 
-              {/* Description */}
               {selectedFlag.description && (
-                <div className="p-4 bg-beige-light rounded-xl">
+                <div className="p-4 bg-beige-medium rounded-xl border border-beige-medium">
                   <p className="text-deep-brown leading-relaxed">{selectedFlag.description}</p>
                 </div>
               )}
 
-              {/* Location */}
-              <div className="p-4 bg-beige-light rounded-xl">
+              <div className="p-4 bg-beige-medium rounded-xl border border-beige-medium">
                 <div className="flex items-center gap-2 text-taupe text-sm mb-1">
                   <MapPin className="w-4 h-4" />
                   <span>Coordinates</span>
                 </div>
-                <p className="text-deep-brown font-medium font-mono text-sm">
+                <p className="text-deep-brown font-mono text-sm">
                   {selectedFlag.lat.toFixed(6)}, {selectedFlag.lng.toFixed(6)}
                 </p>
               </div>
 
-              {/* Timestamp */}
               <div className="flex items-center justify-between text-sm text-taupe pt-2 border-t border-beige-medium">
                 <span>Posted {formatDate(selectedFlag.createdAt)}</span>
               </div>
 
-              {/* Close Button */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setIsDetailSheetOpen(false)}
-                className="btn-primary"
+                className="w-full py-4 bg-red-oxide text-white rounded-xl font-semibold shadow-lg shadow-red-oxide/25"
               >
                 Close
-              </button>
+              </motion.button>
             </div>
           )}
         </BottomSheet>
@@ -544,14 +608,14 @@ function MapPageContent() {
   );
 }
 
-// Main export wrapped in Suspense
+// Main export
 export default function MapPage() {
   return (
     <Suspense fallback={
       <div className="h-screen flex items-center justify-center bg-beige-light">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-red-oxide border-t-transparent rounded-full animate-spin" />
-          <p className="text-taupe text-sm">Loading map...</p>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-3 border-red-oxide border-t-transparent rounded-full animate-spin" />
+          <p className="text-deep-brown">Loading map...</p>
         </div>
       </div>
     }>
