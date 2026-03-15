@@ -1,0 +1,27 @@
+{
+  "name": "Commune",
+  "description": "Community Communication Platform with map-based networking and project management",
+  "context": {
+    "files": [
+      "FEATURES.md",
+      "README.md"
+    ],
+    "always_include": ["FEATURES.md"]
+  },
+  "instructions": {
+    "before_task": "Read FEATURES.md to understand the current feature requirements and project architecture. All development should align with the documented requirements.",
+    "key_features": [
+      "Map Tags ↔ Posts Relationship",
+      "Photo Upload on Posts", 
+      "Workspace (WhatsApp-style Rooms)",
+      "Account Tiers & Network System",
+      "Project Management with Checklists"
+    ]
+  },
+  "tech_stack": {
+    "frontend": ["Next.js 14", "React", "TypeScript", "Tailwind CSS", "shadcn/ui"],
+    "backend": ["Supabase", "PostgreSQL"],
+    "maps": ["Leaflet", "OpenStreetMap"],
+    "auth": ["Supabase Auth"]
+  }
+}
